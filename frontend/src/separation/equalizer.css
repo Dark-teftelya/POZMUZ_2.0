@@ -1,0 +1,88 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* Контейнер для куба */
+#cube-container {
+  perspective: 1000px; /* Для 3D эффекта */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;  /* Заполняем всю высоту экрана */
+  flex-direction: column;
+  position: relative;
+  margin-bottom: 100px; /* Добавляем пространство снизу для стрелок */
+}
+
+/* Куб */
+#cube {
+  position: relative;
+  width: 400px;  /* Уменьшаем размер куба */
+  height: 400px; /* Уменьшаем размер куба */
+  transform-style: preserve-3d;
+  transition: transform 1s;
+}
+
+/* Грани куба */
+.face {
+  position: absolute;
+  width: 400px;  /* Уменьшаем размер граней */
+  height: 400px; /* Уменьшаем размер граней */
+  background-color: rgba(101, 106, 112, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 25px; /* Уменьшаем размер шрифта */
+  color: white;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.front  { transform: translateZ(200px); }
+.back   { transform: rotateY(180deg) translateZ(200px); }
+.left   { transform: rotateY(-90deg) translateZ(200px); }
+.right  { transform: rotateY(90deg) translateZ(200px); }
+.top    { transform: rotateX(90deg) translateZ(200px); }
+.bottom { transform: rotateX(-90deg) translateZ(200px); }
+
+/* Контейнер для кнопок */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 100px;
+  margin-top: 50px; /* Располагаем стрелки ниже куба */
+}
+
+/* Стиль кнопок */
+.arrow-btn {
+  font-size: 24px;
+  background-color:  #666;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.arrow-btn:hover {
+  background-color:  #666;
+}
+
+.arrow-btn:disabled {
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 100px; /* Можно уменьшить расстояние между кнопками */
+  margin-top: 50px;
+}
+
+

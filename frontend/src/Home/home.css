@@ -1,0 +1,228 @@
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+    color: #333;
+    text-align: center;
+}
+
+/* Контейнеры */
+/* Стиль для шапки (header) */
+.header-container {
+    background-color: #333;
+    color: #fff;
+    padding: 15px 20px;
+    margin: 10px;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Убираем стили списка по умолчанию */
+.nav-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Стиль для ссылок */
+.nav-link {
+    background-color: #555;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: #444;
+}
+
+.header-container h1 {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.header-container p {
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 20px 0;
+}
+
+.header-container .cta-button {
+    background-color: #555;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 18px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.header-container .cta-button:hover {
+    background-color: #444;
+}
+
+/* Кнопки */
+button {
+    display: inline-block;
+    background-color: #666;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+/* Аудиоплеер */
+audio {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.range-slider {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.track {
+    margin-top: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 20px;
+}
+
+.track h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Стили для страницы TrackSeparation */
+.tracks h2 {
+    color: #333;
+    text-align: center;
+    margin-top: 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.track-separation-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+    color: #d9534f;
+    text-align: center;
+}
+
+/* Стили для страницы Homepage */
+.homepage {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f9f9f9;
+}
+
+.homepage h1 {
+    font-size: 36px;
+    color: #333;
+}
+
+.homepage p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #666;
+    margin-top: 20px;
+}
+
+.homepage .cta-button {
+    margin-top: 30px;
+    background-color: #666;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+    
+}
+
+.homepage .cta-button:hover {
+    background-color: #555;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.features-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    margin-top: -25px;
+}
+
+.feature-block {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    opacity: 1; /* Убедитесь, что блоки полностью видимы */
+    transform: translateY(0); /* Убедитесь, что блоки не скрыты */
+    animation: fadeInUp 1s ease forwards;
+}
+
+.feature-block h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.feature-block p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Анимация */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation-delay: 0s;
+}
