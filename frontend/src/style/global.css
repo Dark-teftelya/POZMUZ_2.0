@@ -1,0 +1,117 @@
+/* Глобальные стили */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+/* Цветовая палитра */
+:root {
+    --neon-pink: #ff007f;
+    --neon-blue: #00bcd4;
+    --neon-green: #00ff00;
+    --black: #000000;
+    --gray-dark: #333333;
+    --white: #ffffff;
+    --gray-light: #f0f0f0;
+  }
+  
+  /* Основной фон */
+  body {
+    font-family: 'Press Start 2P', cursive;
+    /* background-color: var(--black); */
+    color: var(--white);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    /* background-image: url('../assets/glitter-texture-background.jpg'); */
+     /* Замените на свою текстуру */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Добавляем отступ сверху для основного контента */
+    .main-content {
+        margin-top: 0px; /* Размер отступа можно настроить под высоту навигации */
+        padding: 20px;
+    }
+  
+  /* Заголовки в стиле неона */
+  h1, h2, h3 {
+    font-family: 'Press Start 2P', cursive;
+    color: #fff;
+    text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14, 0 0 15px #39ff14, 0 0 20px #39ff14, 0 0 25px #39ff14; 
+    text-align: center;
+    margin: 0;
+  }
+  
+  /* Стили текста и заголовков с эффектом синусоиды */
+  @keyframes wave {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+  }
+  
+  h1, h2 {
+    animation: wave 1.5s ease-in-out infinite;
+  }
+  
+  /* Навигация */
+  .logo-gradient{
+    font-family: 'Press Start 2P', cursive;
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 18px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+
+
+  .nav-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .nav-link {
+    font-family: 'Press Start 2P', cursive;
+    background-color: var(--neon-blue);
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 18px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    background-color: var(--neon-pink);
+    transform: scale(1.1);
+  }
+
+  .nav-icon{
+    width: auto;
+    height: 40px;
+    border-radius: 50px;
+    margin-right:-20px;
+    margin-top: -10px;
+  }
+  
+  /* Кнопки */
+  button {
+    display: inline-block;
+    background-color: var(--neon-blue);
+    color: var(--white);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: var(--neon-pink);
+    transform: scale(1.05);
+  }
+  

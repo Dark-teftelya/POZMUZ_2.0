@@ -1,57 +1,68 @@
-
-# mixer/views.py
+import subprocess
+from django.http import FileResponse, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
-from .serializers import TrackSerializer
-from django.conf import settings
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.shortcuts import render
-from django.http import JsonResponse
-from .models import Track
 import os
+from django.conf import settings
 
 class TrackUploadView(APIView):
     def post(self, request, *args, **kwargs):
-        # Получаем файл из запроса
         file = request.FILES.get('file')
-        if file:
-            # Формируем путь для сохранения файла
-            file_name = file.name
-            file_path = os.path.join('tracks', file_name)  # Путь внутри папки 'tracks'
+        if not file:
+            return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Сохраняем файл в хранилище
-            with default_storage.open(file_path, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+        if not file.name.lower().endswith(('.mp3', '.wav')):
+            return Response({"error": "Unsupported file format. Use MP3 or WAV"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Сохраняем информацию о файле в базе данных
-            track = Track(file=file_path)  # Используем путь в базе данных
-            track.save()
+        file_name = file.name
+        file_path = os.path.join(settings.MEDIA_ROOT, 'tracks', file_name)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-            # Отправляем ответ с URL файла
-            return Response({"file_url": default_storage.url(file_path)}, status=status.HTTP_201_CREATED)
+        with open(file_path, 'wb+') as destination:
+            for chunk in file.chunks():
+                destination.write(chunk)
 
-        return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"file_path": file_path}, status=status.HTTP_201_CREATED)
+
 class MixTracksView(APIView):
     def post(self, request, *args, **kwargs):
-        tracks = request.data.get('tracks', [])
-        output_file = 'media/mixed_output.mp3'
-        
-        # Формируем команду FFmpeg для сведения
-        inputs = [f"-i {Track.objects.get(id=track_id).file.path}" for track_id in tracks]
-        command = [
-            "ffmpeg",
-            *[arg for track_id in tracks for arg in ("-i", Track.objects.get(id=track_id).file.path)],
-            "-filter_complex", f"amix=inputs={len(tracks)}:duration=longest",
-            output_file
-        ]
+        tracks = [request.FILES.get(f"track_{i}") for i in range(len(request.FILES))]
+        output_format = request.POST.get("format", "mp3")
+
+        if not tracks or None in tracks:
+            return Response({"error": "No tracks provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        temp_files = []
+        for i, track in enumerate(tracks):
+            if not track.name.lower().endswith(('.mp3', '.wav')):
+                return Response({"error": f"Track {i} has unsupported format"}, status=status.HTTP_400_BAD_REQUEST)
+            temp_path = os.path.join(settings.MEDIA_ROOT, 'temp', f"temp_track_{i}.{track.name.split('.')[-1]}")
+            os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+            with open(temp_path, 'wb+') as f:
+                for chunk in track.chunks():
+                    f.write(chunk)
+            temp_files.append(temp_path)
+
+        output_extension = output_format.lower()
+        if output_extension not in ['mp3', 'wav']:
+            output_extension = 'mp3'
+        output_file = os.path.join(settings.MEDIA_ROOT, 'mixed', f"mixed_output_{request.session.session_key or 'default'}.{output_extension}")
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+        command = ["ffmpeg"] + [arg for temp_file in temp_files for arg in ("-i", temp_file)]
+        command += ["-filter_complex", f"amix=inputs={len(temp_files)}:duration=longest", "-f", output_extension, output_file, "-y"]
 
         try:
-            subprocess.run(command, check=True)
-            return FileResponse(open(output_file, 'rb'), as_attachment=True)
+            subprocess.run(command, check=True, capture_output=True, text=True)
+            print(f"Сведение успешно: {output_file}")  # Отладка
+            response = FileResponse(open(output_file, 'rb'), as_attachment=True, filename=f"mix.{output_extension}")
+            for temp_file in temp_files:
+                os.remove(temp_file)
+            os.remove(output_file)
+            return response
         except subprocess.CalledProcessError as e:
-            return Response({"error": f"FFmpeg error: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            for temp_file in temp_files:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            return Response({"error": f"FFmpeg error: {e.stderr}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

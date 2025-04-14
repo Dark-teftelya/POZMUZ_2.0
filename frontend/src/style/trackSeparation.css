@@ -1,0 +1,556 @@
+/* Переменные для консистентности цветов */
+:root {
+    --neon-blue: #00f0ff;
+    --neon-pink: #ff007a;
+    --neon-green: #00ff85;
+    --black: #1a1a1a;
+    --gray-light: #d3d3d3;
+    --white: #ffffff;
+}
+
+/* Общие стили контейнера */
+.container {
+    width: 100%;
+    max-width: 1326px;
+    margin: 20px auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Начальный экран с выбором режима */
+.modeSelection {
+    width: 100%;
+    max-width: 1326px;
+    background: linear-gradient(135deg, rgba(129, 76, 203, 0.9), rgba(215, 45, 129, 0.9));
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.modeSelection:hover {
+    transform: translateY(-5px);
+}
+
+.modeSelection h2 {
+    font-size: clamp(24px, 5vw, 32px);
+    margin-bottom: 30px;
+    color: var(--white);
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+.modeButtons {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.modeButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 150px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modeButton img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+    background-color: #bdb5b5;
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+.modeButton span {
+    margin-top: 10px;
+    font-size: clamp(16px, 3vw, 20px);
+    color: var(--white);
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+.modeButton:hover {
+    transform: scale(1.2);
+}
+
+.modeButton.separation:hover ~ .generation {
+    transform: translateX(20px);
+}
+
+.modeButton.generation:hover ~ .separation {
+    transform: translateX(-20px);
+}
+
+/* Первый блок - Upload Section */
+.uploadSection {
+    width: 100%;
+    max-width: 1326px;
+    background: linear-gradient(135deg, rgba(215, 45, 129, 0.9), rgba(129, 76, 203, 0.9));
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    box-sizing: border-box;
+}
+
+.uploadSection:hover {
+    transform: translateY(-5px);
+}
+
+.uploadSection h2 {
+    font-size: clamp(24px, 5vw, 32px);
+    margin-bottom: 20px;
+    color: var(--white);
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+.uploadSection p {
+    font-size: clamp(14px, 3vw, 18px);
+    margin-bottom: 30px;
+    color: var(--white);
+    opacity: 0.9;
+}
+
+.uploadSection .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.uploadSection input[type="file"] {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    font-size: clamp(12px, 2.5vw, 14px);
+    color: var(--white);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.uploadSection .neonButton {
+    width: 100%;
+    max-width: 200px;
+    background-color: var(--neon-blue);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: clamp(14px, 2.5vw, 16px);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px var(--neon-blue);
+    transition: all 0.3s ease;
+}
+
+/* Новый блок - Generation Section */
+.generationSection {
+    width: 100%;
+    max-width: 1326px;
+    background: linear-gradient(135deg, rgba(129, 76, 203, 0.9), rgba(80, 40, 160, 0.9));
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.generationSection:hover {
+    transform: translateY(-5px);
+}
+
+.generationSection h2 {
+    font-size: clamp(24px, 5vw, 32px);
+    margin-bottom: 20px;
+    color: var(--white);
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+.generationSection p {
+    font-size: clamp(14px, 3vw, 18px);
+    margin-bottom: 30px;
+    color: var(--white);
+    opacity: 0.9;
+}
+
+.generationSection .neonButton {
+    background-color: var(--neon-blue);
+    color: var(--white);
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: clamp(16px, 2.5vw, 20px);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px var(--neon-blue);
+    transition: all 0.3s ease;
+}
+
+.uploadSection .neonButton:hover,
+.generationSection .neonButton:hover {
+    background-color: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+    transform: scale(1.05);
+}
+
+.uploadSection .neonButton:disabled,
+.generationSection .neonButton:disabled {
+    background-color: var(--gray-light);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.uploadSection .loading,
+.generationSection .loading {
+    font-size: clamp(14px, 3vw, 18px);
+    color: var(--neon-green);
+    margin-top: 20px;
+}
+
+.uploadSection .error,
+.generationSection .error {
+    font-size: clamp(14px, 3vw, 18px);
+    color: var(--neon-pink);
+    margin-top: 20px;
+}
+
+/* Кнопка переключения */
+.switchButton {
+    background-color: var(--neon-pink);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: clamp(14px, 2.5vw, 18px);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px var(--neon-pink);
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.switchButton:hover {
+    background-color: var(--neon-blue);
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: scale(1.05);
+}
+
+/* Второй блок - Library Section */
+.librarySection {
+    width: 100%;
+    max-width: 1326px;
+    background: linear-gradient(135deg, rgba(129, 76, 203, 0.9), rgba(80, 40, 160, 0.9));
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-top: 40px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.librarySection.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.librarySection.hidden {
+    display: none;
+}
+
+.librarySection h2 {
+    font-size: clamp(22px, 4vw, 28px);
+    margin-bottom: 15px;
+    color: var(--white);
+    text-shadow: 0 0 8px var(--neon-green);
+}
+
+.librarySection p {
+    font-size: clamp(14px, 3vw, 18px);
+    color: var(--white);
+    opacity: 0.9;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Элемент трека */
+.trackItem {
+    width: 100%;
+    max-width: 1200px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.trackItem:hover {
+    transform: translateX(5px);
+}
+
+.trackItem h4 {
+    font-size: clamp(16px, 3vw, 20px);
+    color: var(--white);
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+.waveform {
+    width: 100%;
+    max-width: 600px;
+    height: 80px;
+    background: var(--gray-light);
+    margin: 10px 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    touch-action: manipulation;
+}
+
+.trackControls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+    justify-content: flex-start;
+    flex-wrap: wrap; /* Для адаптивности на мобильных */
+}
+
+.playButton {
+    background: var(--neon-blue);
+    color: var(--white);
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.playButton:hover {
+    background: var(--neon-pink);
+    box-shadow: 0 0 10px var(--neon-pink);
+}
+
+.saveButton {
+    background: var(--neon-green);
+    color: var(--white);
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: clamp(12px, 2vw, 14px);
+    box-shadow: 0 0 10px var(--neon-green);
+    transition: all 0.3s ease;
+}
+
+.saveButton:hover {
+    background: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+}
+
+.trackItem label {
+    font-size: clamp(14px, 2.5vw, 16px);
+    color: var(--white);
+    margin-right: 10px;
+}
+
+.trackItem .range-slider {
+    width: 100%;
+    max-width: 300px;
+    height: 12px;
+    background: var(--gray-light);
+    border-radius: 5px;
+    outline: none;
+    cursor: grab;
+    /* -webkit-appearance: none; */
+    touch-action: none;
+    position: relative;
+    z-index: 3;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.trackItem .range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: var(--neon-blue);
+    border-radius: 50%;
+    cursor: grab;
+    box-shadow: 0 0 10px var(--neon-blue);
+    position: relative;
+    z-index: 4;
+}
+
+.trackItem .range-slider::-webkit-slider-thumb:hover,
+.trackItem .range-slider::-webkit-slider-thumb:active {
+    background: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+    cursor: grabbing;
+}
+
+.trackItem .range-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: var(--neon-blue);
+    border-radius: 50%;
+    cursor: grab;
+    box-shadow: 0 0 10px var(--neon-blue);
+    border: none;
+}
+
+.trackItem .range-slider::-moz-range-thumb:hover,
+.trackItem .range-slider::-moz-range-thumb:active {
+    background: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+    cursor: grabbing;
+}
+
+/* Третий блок - Features Section */
+.featuresSection {
+    width: 100%;
+    max-width: 1326px;
+    min-height: 600px;
+    background: linear-gradient(135deg, rgba(80, 40, 160, 0.9), rgba(129, 76, 203, 0.9));
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-top: 40px;
+    transition: transform 0.5s ease, margin-top 0.5s ease;
+}
+
+.featuresSection.hidden {
+    transform: translateY(20px);
+    margin-top: 0;
+    display: none;
+}
+
+.featuresSection h2 {
+    font-size: clamp(22px, 4vw, 28px);
+    margin-bottom: 15px;
+    color: var(--white);
+    text-shadow: 0 0 8px var(--neon-green);
+}
+
+.featuresSection p {
+    font-size: clamp(14px, 3vw, 18px);
+    color: var(--white);
+    opacity: 0.9;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Медиа-запросы */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .modeSelection,
+    .uploadSection,
+    .generationSection,
+    .librarySection,
+    .featuresSection {
+        padding: 20px;
+    }
+
+    .modeSelection h2,
+    .uploadSection h2,
+    .generationSection h2,
+    .librarySection h2,
+    .featuresSection h2 {
+        font-size: clamp(20px, 4vw, 24px);
+    }
+
+    .modeSelection p,
+    .uploadSection p,
+    .generationSection p,
+    .librarySection p,
+    .featuresSection p {
+        font-size: clamp(12px, 2.5vw, 16px);
+    }
+
+    .modeButtons {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .modeButton {
+        width: 120px;
+    }
+
+    .modeButton img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .uploadSection .form-group {
+        gap: 10px;
+    }
+
+    .uploadSection input[type="file"] {
+        max-width: 100%;
+    }
+
+    .uploadSection .neonButton {
+        max-width: 150px;
+    }
+
+    .trackItem {
+        padding: 10px;
+    }
+
+    .waveform {
+        max-width: 100%;
+        height: 60px;
+    }
+
+    .trackControls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .trackItem .range-slider {
+        max-width: 200px;
+        height: 10px;
+    }
+
+    .trackItem .range-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    .trackItem .range-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    .saveButton {
+        padding: 6px 10px;
+        font-size: clamp(10px, 2vw, 12px);
+    }
+}
+
+@media (min-width: 1326px) {
+    .waveform {
+        height: 100px;
+    }
+}

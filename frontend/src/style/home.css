@@ -1,0 +1,1042 @@
+/* Главная страница */
+/* Подключение шрифта */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Переменные для консистентности цветов */
+:root {
+    --neon-blue: #00f0ff;
+    --neon-pink: #ff007a;
+    --neon-green: #39ff14;
+    --black: #1a1a1a;
+    --gray-light: #d3d3d3;
+    --white: #ffffff;
+    --shadow-glow: 0 0 15px rgba(57, 255, 20, 0.5);
+}
+
+/* Общий стиль страницы */
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #7a7a7a, #917ea9);
+    min-height: 100vh;
+}
+
+/* Стили для навигалки */
+.nav-icon-desktop {
+    display: inline-block;
+}
+
+.nav-icon-toggle {
+    display: none; /* Скрываем по умолчанию на десктопе */
+}
+
+.header-container {
+    background-color: rgba(123, 59, 234, 0.6);
+    padding: 30px;
+    border-radius: 0px;
+    margin: 0 0;
+    text-align: center;
+    width: 100%;
+}
+
+.header-container h3 {
+    font-size: 24px;
+    color: white;
+    text-shadow: 2px 2px 5px #39ff14;
+    margin-bottom: 20px;
+}
+
+.header-container p {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 18px;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #39ff14;
+}
+
+/* Стили для анимированного логотипа */
+.logo-gradient {
+    font-size: 32px;
+    font-weight: bold;
+    font-family: 'Press Start 2P', cursive;
+    color: var(--white);
+    text-shadow: 0 0 5px var(--white),
+                0 0 10px var(--white),
+                0 0 20px var(--neon-pink),
+                0 0 40px var(--neon-pink),
+                0 0 80px var(--neon-green);
+    animation: neonPulse 1.5s infinite alternate;
+    position: relative;
+    display: inline-block;
+    left: 10px;
+}
+
+.logo-gradient::after {
+    content: 'POZMUZ';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: transparent;
+    text-shadow: 0 0 5px var(--neon-pink);
+    animation: flicker 0.1s infinite;
+}
+
+/* Ключевые кадры для анимации */
+@keyframes neonPulse {
+    0% {
+        text-shadow: 0 0 5px #fff,
+                    0 0 10px #fff,
+                    0 0 20px #ff00ff,
+                    0 0 40px #ff00ff,
+                    0 0 80px #39ff14;
+    }
+    100% {
+        text-shadow: 0 0 2px #fff,
+                    0 0 5px #fff,
+                    0 0 10px #ff00ff,
+                    0 0 20px #ff00ff,
+                    0 0 40px #39ff14;
+    }
+}
+
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        opacity: 1;
+    }
+    20%, 24%, 55% {
+        opacity: 0.6;
+    }
+}
+
+/* Главный контейнер */
+.homepage-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+}
+
+/* Шапка с приветствием */
+.hero-section {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(196, 51, 123, 0.9), rgba(129, 76, 203, 0.9));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 60px 80px;
+    margin-bottom: 60px;
+    box-shadow: var(--shadow-glow);
+    border-radius: 20px;
+}
+
+.hero-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(24px, 4vw, 36px);
+    color: var(--white);
+    text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-pink);
+    max-width: 60%;
+}
+
+.hero-text h1 {
+    font-size: clamp(28px, 5vw, 40px);
+    margin-bottom: 20px;
+}
+
+.hero-text p {
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: var(--gray-light);
+}
+
+.hero-image-container {
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px var(--neon-blue);
+    transition: transform 0.3s ease;
+}
+
+.hero-image-container:hover {
+    transform: rotate(5deg) scale(1.05);
+}
+
+.image {
+    width: 230px;
+    height: 230px;
+}
+
+/* Блок "Ключевые функции" */
+.features-section {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(78, 190, 188, 0.9), rgba(129, 76, 203, 0.9));
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 60px;
+    box-shadow: var(--shadow-glow);
+    border-radius: 20px;
+}
+
+.features-image-container {
+    width: 190px;
+    height: 190px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    margin-bottom: 40px;
+    box-shadow: 0 0 20px var(--neon-blue);
+}
+
+.image2 {
+    width: 190px;
+    height: 190px;
+    border-radius: 50px;
+}
+
+.features-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(28px, 5vw, 40px);
+    color: var(--white);
+    text-shadow: 0 0 15px var(--neon-green);
+    margin-bottom: 40px;
+}
+
+.features-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.feature-pair {
+    display: flex;
+    flex-direction: row; /* На десктопе — в строку */
+    gap: 20px;
+    align-items: flex-start; /* Выравниваем по верхнему краю */
+    width: 100%;
+    max-width: 620px; /* Ограничиваем ширину пары */
+}
+
+.feature-box {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0;
+    border-radius: 15px;
+    width: 300px;
+    height: 500px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    animation: neonGlow 2s infinite alternate ease-in-out;
+    transform-origin: center;
+}
+
+.feature-box:hover {
+    transform: scale(1.4);
+    box-shadow: 0 0 25px var(--neon-pink);
+    border-image: linear-gradient(45deg, var(--neon-pink), var(--neon-green)) 1;
+}
+
+.feature-box.zoomed {
+    transform: scale(1.4);
+    box-shadow: 0 0 25px var(--neon-pink);
+    border: 2px solid transparent;
+    border-image: linear-gradient(45deg, var(--neon-pink), var(--neon-green)) 1;
+}
+
+.feature-video {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+.description-container {
+    display: flex;
+    flex-direction: column; /* Описания в столбик */
+    gap: 20px;
+    flex: 1; /* Занимает оставшееся пространство */
+    min-width: 300px; /* Минимальная ширина для описаний */
+}
+
+.feature-description {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 15px;
+    border-radius: 15px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    animation: neonGlow 2s infinite alternate ease-in-out;
+}
+
+.feature-description h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 22px;
+    color: var(--white);
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px var(--neon-green);
+}
+
+.feature-description p {
+    color: var(--gray-light);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Новая анимация: неоновое свечение */
+@keyframes neonGlow {
+    0% {
+        box-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink);
+    }
+    100% {
+        box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-pink);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .features-section {
+        padding: 30px 20px;
+        margin-bottom: 30px;
+    }
+
+    .features-image-container {
+        width: clamp(120px, 30vw, 150px);
+        height: clamp(120px, 30vw, 150px);
+        border-radius: 25px;
+        margin: 0 auto 20px;
+    }
+
+    .image2 {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 25px;
+    }
+
+    .features-title {
+        font-size: clamp(20px, 4vw, 28px);
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .features-container {
+        gap: 20px;
+    }
+
+    .feature-pair {
+        flex-direction: column; /* На мобильных — в столбик */
+        gap: 15px;
+        max-width: 320px;
+    }
+
+    .feature-box {
+        width: 100%;
+        max-width: 320px;
+        height: 200px;
+        border-radius: 10px;
+        margin: 0 auto;
+    }
+
+    .feature-video {
+        border-radius: 10px;
+    }
+
+    .feature-box:hover {
+        transform: none;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        border: none;
+    }
+
+    .description-container {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .feature-description {
+        width: 100%;
+        max-width: 320px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .feature-description h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .feature-description p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .feature-box {
+        height: 160px;
+    }
+
+    .feature-video {
+        border-radius: 8px;
+    }
+
+    .feature-description h3 {
+        font-size: 16px;
+    }
+
+    .feature-description p {
+        font-size: 12px;
+    }
+}
+
+/* Блок "Get Started" */
+.get-started-section {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(196, 51, 123, 0.9), rgba(80, 40, 160, 0.9));
+    padding: 60px;
+    text-align: center;
+    margin-bottom: 60px;
+    box-shadow: var(--shadow-glow);
+    border-radius: 20px;
+}
+
+.get-started-image-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid var(--white);
+    border-radius: 50px;
+    margin-bottom: 80px;
+    padding: 20px;
+}
+
+.get-started-text {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.get-started-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(26px, 4vw, 38px);
+    color: var(--white);
+    text-shadow: 0 0 12px var(--neon-green);
+    margin-bottom: 20px;
+}
+
+.get-started-text p {
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: var(--gray-light);
+}
+
+.get-started-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.get-started-box {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 20px;
+    border-radius: 25px;
+    flex: 1;
+    min-width: 250px;
+    max-width: 70%;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+.get-started-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px var(--neon-blue);
+}
+
+.get-started-width {
+    width: 100%;
+    display: flex;
+    padding: 20px;
+    border-radius: 25px;
+    align-items: center;
+    min-width: 250px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+.get-started-width:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px var(--neon-blue);
+}
+
+.text-container, .text-container-w {
+    margin-left: 20px;
+}
+
+.text-container h3, .text-container-w h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 20px;
+    color: var(--white);
+    text-shadow: 2px 2px 8px var(--neon-green);
+    margin-bottom: 10px;
+}
+
+.text-container p, .text-container-w p {
+    font-size: 16px;
+    color: var(--gray-light);
+}
+
+/* Экстра секция */
+.extra-section {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(129, 76, 203, 0.9), rgba(80, 40, 160, 0.9));
+    padding: 60px;
+    text-align: center;
+    margin-bottom: 60px;
+    box-shadow: var(--shadow-glow);
+    border-radius: 20px;
+}
+
+.section-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(26px, 4vw, 38px);
+    color: var(--white);
+    text-shadow: 0 0 12px var(--neon-green);
+    margin-bottom: 40px;
+}
+
+.feature-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.feature-card {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 25px;
+    border-radius: 15px;
+    width: 300px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0 25px var(--neon-pink);
+}
+
+.feature-card h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 20px;
+    color: var(--white);
+    text-shadow: 2px 2px 8px var(--neon-green);
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    color: var(--gray-light);
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.image3 {
+    width: 100px;
+    height: 100px;
+    border-radius: 30px;
+}
+
+/* Стили для ссылок с изображениями */
+.image-link {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.image-link::after {
+    content: "Перейти →";
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--neon-blue);
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    box-shadow: 0 0 8px var(--neon-blue);
+}
+
+/* Делаем подсказку видимой для элементов с классом visible-hint */
+.image-link.visible-hint::after {
+    opacity: 1;
+    animation: pulse 2s infinite ease-in-out; /* Добавляем пульсацию */
+}
+
+/* При наведении усиливаем эффект */
+.image-link.visible-hint:hover::after {
+    transform: translateX(-50%) scale(1.1); /* Небольшое увеличение */
+    background: rgba(0, 0, 0, 0.9);
+    box-shadow: 0 0 12px var(--neon-blue);
+}
+
+/* Анимация пульсации */
+@keyframes pulse {
+    0% {
+        transform: translateX(-50%) scale(1);
+        box-shadow: 0 0 8px var(--neon-blue);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 0 12px var(--neon-blue);
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+        box-shadow: 0 0 8px var(--neon-blue);
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.feature-box, .get-started-box, .get-started-width, .feature-card {
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Футер */
+.footer-section {
+    width: 100%;
+    background: rgba(123, 59, 234, 0.6);
+    padding: 40px 60px;
+    text-align: center;
+    box-shadow: var(--shadow-glow);
+    border-radius: 0px;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.footer-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    color: var(--gray-light);
+    text-shadow: 0 0 5px var(--neon-green);
+    flex: 1;
+    margin: 10px;
+}
+
+.social-block, .support-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    min-width: 200px;
+}
+
+.social-title, .support-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    color: var(--white);
+    text-shadow: 0 0 8px var(--neon-pink);
+    margin: 0;
+}
+
+.social-links {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+}
+
+.social-link {
+    display: inline-block;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.social-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--neon-pink);
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 0 5px var(--neon-blue));
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    .homepage-container {
+        padding: 0 10px;
+    }
+
+    .hero-section {
+        flex-direction: column;
+        padding: 30px 20px;
+        margin-bottom: 30px;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .hero-text {
+        max-width: 100%;
+        font-size: clamp(18px, 3.5vw, 24px);
+    }
+
+    .hero-text h1 {
+        font-size: clamp(20px, 4.5vw, 28px);
+        margin-bottom: 15px;
+    }
+
+    .hero-text p {
+        font-size: clamp(14px, 2.5vw, 16px);
+    }
+
+    .hero-image-container {
+        width: clamp(150px, 40vw, 180px);
+        height: clamp(150px, 40vw, 180px);
+        border-radius: 10px;
+    }
+
+    .image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .get-started-section {
+        padding: 30px 20px;
+        margin-bottom: 30px;
+    }
+
+    .get-started-image-container {
+        flex-direction: column;
+        padding: 15px;
+        margin-bottom: 30px;
+        border-radius: 25px;
+        gap: 15px;
+    }
+
+    .get-started-text {
+        padding: 0;
+        margin: 0 auto 15px;
+        text-align: center;
+    }
+
+    .get-started-title {
+        font-size: clamp(20px, 4vw, 28px);
+        margin-bottom: 15px;
+    }
+
+    .get-started-text p {
+        font-size: clamp(14px, 2.5vw, 16px);
+    }
+
+    .get-started-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .get-started-box, .get-started-width {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+        border-radius: 15px;
+        min-width: 0;
+        max-width: 320px;
+    }
+
+    .get-started-box .image2, .get-started-width .image2 {
+        width: clamp(80px, 25vw, 100px);
+        height: clamp(80px, 25vw, 100px);
+        border-radius: 15px;
+        margin-bottom: 10px;
+    }
+
+    .text-container, .text-container-w {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    .text-container h3, .text-container-w h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .text-container p, .text-container-w p {
+        font-size: 14px;
+    }
+
+    .extra-section {
+        padding: 30px 20px;
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: clamp(20px, 4vw, 28px);
+        margin-bottom: 20px;
+    }
+
+    .feature-cards {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .feature-card {
+        width: 100%;
+        max-width: 320px;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .feature-card h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .feature-card p {
+        font-size: 14px;
+    }
+
+    .image3 {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+    }
+
+    .footer-section {
+        padding: 20px;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .social-block, .support-block {
+        margin-top: 0;
+        width: 100%;
+    }
+
+    .footer-text {
+        order: 1;
+        font-size: 12px;
+    }
+
+    .social-block {
+        order: 0;
+    }
+
+    .support-block {
+        order: 0;
+    }
+
+    .social-icon {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-section, .features-section, .get-started-section, .extra-section, .footer-section {
+        padding: 20px 10px;
+    }
+
+    .hero-text h1 {
+        font-size: clamp(18px, 4vw, 24px);
+    }
+
+    .hero-text p {
+        font-size: 12px;
+    }
+
+    .hero-image-container {
+        width: clamp(120px, 35vw, 150px);
+        height: clamp(120px, 35vw, 150px);
+    }
+
+    .features-title, .get-started-title, .section-title {
+        font-size: clamp(18px, 4vw, 24px);
+    }
+
+    .feature-box, .get-started-box, .get-started-width, .feature-card {
+        padding: 10px;
+        max-width: 280px;
+    }
+
+    .get-started-box .image2, .get-started-width .image2 {
+        width: clamp(60px, 20vw, 80px);
+        height: clamp(60px, 20vw, 80px);
+    }
+
+    .image3 {
+        width: 60px;
+        height: 60px;
+    }
+
+    .social-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .footer-text {
+        font-size: 10px;
+    }
+}
+
+/* Адаптивность для навигалки */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 25px 10px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: var(--shadow-glow);
+    }
+
+    .nav-list {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgba(123, 59, 234, 0.9);
+        padding: 20px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        align-items: center;
+    }
+
+    .nav-list.active {
+        display: flex;
+    }
+
+    .nav-link {
+        font-size: 16px;
+        padding: 10px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .logo-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+    }
+
+    .logo-gradient {
+        font-size: 24px;
+        text-shadow: 0 0 5px var(--white),
+                    0 0 10px var(--white),
+                    0 0 20px var(--neon-pink),
+                    0 0 40px var(--neon-pink),
+                    0 0 80px var(--neon-green);
+        animation: neonPulse 1.5s infinite alternate;
+    }
+
+    .logo-gradient::after {
+        content: 'POZMUZ';
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: transparent;
+        text-shadow: 0 0 5px var(--neon-pink);
+        animation: flicker 0.1s infinite;
+    }
+
+    .nav-icon-toggle {
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        right: 25px;
+        top: calc(50% + 10px);
+        transform: translateY(-50%);
+        cursor: pointer;
+        display: block;
+    }
+
+    .nav-icon-desktop {
+        display: none;
+    }
+
+    .header-container h3,
+    .header-container p {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 25px 10px;
+    }
+
+    .nav-link {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .logo-gradient {
+        font-size: 20px;
+    }
+
+    .nav-icon-toggle {
+        width: 25px;
+        height: 25px;
+        right: 20px;
+        top: calc(50% + 10px);
+    }
+}

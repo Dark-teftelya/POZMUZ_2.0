@@ -19,21 +19,27 @@ os.environ['PATH'] += os.pathsep + '/opt/local/bin'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
+# === Безопасность ======================================================
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '%2r$8@0pm&=y&7xi-_x=%+-_8h$mai2)!5v*2@(-=jv%nu0f4a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.1.100", "localhost", "*"] #РАЗКОМЕНТИРУЙ ПОСЛЕ РАЗРАБОТКИ
+
+CORS_ORIGIN_ALLOW_ALL = True  # Включите это для разработки, но установите конкретные домены для продакшена
+
+# ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    "http://192.168.1.102:3000",
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True  # Включите это для разработки, но установите конкретные домены для продакшена
-
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 
 # REDIS SETT
 CACHES = {
@@ -77,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -169,4 +176,5 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
