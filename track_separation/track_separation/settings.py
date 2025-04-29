@@ -36,7 +36,10 @@ CORS_ORIGIN_ALLOW_ALL = True  # Включите это для разработ�
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    "http://192.168.1.100:3000",
+    "http://192.168.1.101:3000",
     "http://192.168.1.102:3000",
+    "http://172.20.10.2:3000"
 ]
 
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
@@ -75,6 +78,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django.core.files',
     'mixer',
+    'equalize',
     
 ]
 

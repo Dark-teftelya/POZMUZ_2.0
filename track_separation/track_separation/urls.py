@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/output_files/', GetOutputFilesView.as_view(), name='get-output-files'),
     path('api/generate/', GenerateSoundView.as_view(), name='generate-sound'),
     
+    path('api/equalize/', include('equalize.urls')),
     path('api/', include('mixer.urls')),
     
     path('api/upload/', upload_file, name='upload_file'),

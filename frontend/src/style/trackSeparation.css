@@ -457,6 +457,104 @@
     line-height: 1.5;
 }
 
+/* Стили для модальных окон */
+.neon-modal .modal-content {
+    background: var(--black);
+    border: 2px solid var(--neon-pink);
+    border-radius: 15px;
+    box-shadow: 0 0 15px var(--neon-pink);
+    color: var(--white);
+}
+
+.neon-modal .modal-header {
+    border-bottom: 1px solid var(--neon-blue);
+    background: linear-gradient(135deg, rgba(129, 76, 203, 0.9), rgba(215, 45, 129, 0.9));
+    border-radius: 14px 14px 0 0;
+    padding: 15px;
+}
+
+.neon-modal .modal-title {
+    font-size: clamp(18px, 4vw, 24px);
+    color: var(--white);
+    text-shadow: 0 0 8px var(--neon-green);
+}
+
+.neon-modal .modal-body {
+    font-size: clamp(14px, 3vw, 18px);
+    color: var(--white);
+    opacity: 0.9;
+    padding: 20px;
+}
+
+.neon-modal .modal-footer {
+    border-top: 1px solid var(--neon-blue);
+    padding: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.neon-modal .btn-secondary {
+    background: var(--gray-light);
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: clamp(12px, 2.5vw, 14px);
+    box-shadow: 0 0 10px var(--gray-light);
+    transition: all 0.3s ease;
+}
+
+.neon-modal .btn-secondary:hover {
+    background: var(--neon-blue);
+    color: var(--white);
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: scale(1.05);
+}
+
+.neon-modal .neon-button {
+    background: var(--neon-blue);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: clamp(12px, 2.5vw, 14px);
+    box-shadow: 0 0 10px var(--neon-blue);
+    transition: all 0.3s ease;
+}
+
+.neon-modal .neon-button:hover {
+    background: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+    transform: scale(1.05);
+}
+
+.boosty-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--neon-green);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: clamp(14px, 2.5vw, 16px);
+    text-decoration: none;
+    box-shadow: 0 0 10px var(--neon-green);
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.boosty-link:hover {
+    background: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+    transform: scale(1.05);
+}
+
+.boosty-icon {
+    width: 24px;
+    height: 24px;
+}
+
 /* Медиа-запросы */
 @media (max-width: 768px) {
     .container {
@@ -546,6 +644,34 @@
     .saveButton {
         padding: 6px 10px;
         font-size: clamp(10px, 2vw, 12px);
+    }
+
+    .neon-modal .modal-content {
+        border-width: 1px;
+    }
+
+    .neon-modal .modal-title {
+        font-size: clamp(16px, 3.5vw, 20px);
+    }
+
+    .neon-modal .modal-body {
+        font-size: clamp(12px, 2.5vw, 16px);
+    }
+
+    .neon-modal .btn-secondary,
+    .neon-modal .neon-button {
+        padding: 6px 12px;
+        font-size: clamp(10px, 2vw, 12px);
+    }
+
+    .boosty-link {
+        padding: 8px 16px;
+        font-size: clamp(12px, 2vw, 14px);
+    }
+
+    .boosty-icon {
+        width: 20px;
+        height: 20px;
     }
 }
 

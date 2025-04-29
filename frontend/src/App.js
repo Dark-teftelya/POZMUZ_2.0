@@ -19,6 +19,7 @@ const App = () => {
         <Router>
             {/* Навигация */}
             <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+            <link rel="manifest" href="/manifest.json"></link>
             <nav className="header-container">
                 <img
                     src={nav_icon}

@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import * as Tone from 'tone';
+import WaveSurfer from 'wavesurfer.js';
+import lamejs from 'lamejs';
+import * as musicMetadata from 'music-metadata-browser';
 import '../style/equalizer.css';
 import eqVolumeGif from '../assets/eqvol.gif';
 import musicWaveGif from '../assets/music.gif';
@@ -14,8 +17,6 @@ import speedIcon from '../assets/speed-icon.png';
 import pitchIcon from '../assets/pitch-icon.png';
 import equalizerIcon from '../assets/equalizer-icon.png';
 
-import { API_BASE_URL } from "../config";
-
 const EqualizerCube = () => {
   const frequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
   const [player, setPlayer] = useState(null);
@@ -25,7 +26,8 @@ const EqualizerCube = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const analyserRef = useRef(null);
-  const canvasRef = useRef(null);
+  const wavesurferRef = useRef(null);
+  const waveformContainerRef = useRef(null);
   const positionRef = useRef(0);
   const startTimeRef = useRef(null);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -39,10 +41,22 @@ const EqualizerCube = () => {
   const [volume, setVolume] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [pitch, setPitch] = useState(0);
-  const [format, setFormat] = useState('MP3');
+  const [format, setFormat] = useState('WAV');
   const [error, setError] = useState('');
   const [fileSelected, setFileSelected] = useState(false);
+  const [trackName, setTrackName] = useState('');
   const audioProcessingRef = useRef(null);
+
+  // Максимальный размер файла (100 МБ)
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB in bytes
+
+  // Функция для санирования имени файла
+  const sanitizeFileName = (name) => {
+    return name
+      .replace(/[<>"';&]/g, '') // Удаляем потенциально опасные символы
+      .replace(/\s+/g, '_') // Заменяем пробелы на подчеркивания
+      .slice(0, 100); // Ограничиваем длину имени
+  };
 
   useEffect(() => {
     const newPlayer = new Tone.Player().toDestination();
@@ -72,6 +86,13 @@ const EqualizerCube = () => {
     setPlayer(newPlayer);
     setFilters(newFilters);
     setPitchShift(newPitchShift);
+
+    return () => {
+      newPlayer.dispose();
+      newFilters.forEach(filter => filter.dispose());
+      newPitchShift.dispose();
+      if (analyser) analyser.dispose();
+    };
   }, []);
 
   useEffect(() => {
@@ -85,88 +106,131 @@ const EqualizerCube = () => {
   }, []);
 
   useEffect(() => {
-    const drawWaveform = () => {
-      const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
-      const analyser = analyserRef.current;
+    if (!audioBuffer || !waveformContainerRef.current) return;
 
-      if (!canvas || !ctx) return;
+    try {
+      const wavesurfer = WaveSurfer.create({
+        container: waveformContainerRef.current,
+        waveColor: 'violet',
+        progressColor: 'purple',
+        cursorColor: 'white',
+        barWidth: 2,
+        height: 100,
+        responsive: true,
+      });
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#1e3a5f';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      wavesurferRef.current = wavesurfer;
 
-      const width = canvas.width;
-      const height = canvas.height;
-
-      if (!audioBuffer) {
-        ctx.beginPath();
-        ctx.strokeStyle = '#00ff00';
-        ctx.lineWidth = 1;
-        ctx.moveTo(0, height / 2);
-        ctx.lineTo(width, height / 2);
-        ctx.stroke();
+      const blob = bufferToWave(audioBuffer);
+      if (blob) {
+        wavesurfer.loadBlob(blob);
       } else {
-        const channelData = audioBuffer.getChannelData(0);
-        const step = Math.ceil(channelData.length / width);
-        const amp = height / 2;
-
-        ctx.beginPath();
-        ctx.strokeStyle = '#00ff00';
-        ctx.lineWidth = 1;
-
-        for (let i = 0; i < width; i++) {
-          let min = 1.0;
-          let max = -1.0;
-          for (let j = 0; j < step; j++) {
-            const datum = channelData[(i * step) + j] || 0;
-            if (datum < min) min = datum;
-            if (datum > max) max = datum;
-          }
-          const x = i;
-          const y = (1 + min) * amp;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-
-        for (let i = 0; i < width; i++) {
-          let min = 1.0;
-          let max = -1.0;
-          for (let j = 0; j < step; j++) {
-            const datum = channelData[(i * step) + j] || 0;
-            if (datum < min) min = datum;
-            if (datum > max) max = datum;
-          }
-          const x = i;
-          const y = (1 + max) * amp;
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+        throw new Error('Не удалось создать WAV Blob');
       }
 
-      if (mode === 'trim' && trimStart !== trimEnd) {
-        const start = Math.min(trimStart, trimEnd);
-        const end = Math.max(trimStart, trimEnd);
-        ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-        ctx.fillRect(start * width, 0, (end - start) * width, height);
-      }
+      wavesurfer.on('interaction', (time) => {
+        if (!audioBuffer) return;
+        const duration = audioBuffer.duration;
+        const position = Math.max(0, Math.min(1, time / duration));
 
-      requestAnimationFrame(drawWaveform);
-    };
-    drawWaveform();
-  }, [mode, trimStart, trimEnd, audioBuffer]);
+        if (mode === 'trim') {
+          if (!isDragging) {
+            setTrimStart(position);
+            setTrimEnd(position);
+            setIsDragging(true);
+          } else {
+            setTrimEnd(position);
+          }
+        } else {
+          handleSeek(position * duration, true);
+        }
+      });
+
+      wavesurfer.on('error', (err) => {
+        console.error('WaveSurfer ошибка:', err);
+        setError('Ошибка WaveSurfer: ' + err.message);
+      });
+
+      return () => {
+        if (wavesurferRef.current) {
+          wavesurferRef.current.destroy();
+          wavesurferRef.current = null;
+        }
+      };
+    } catch (err) {
+      console.error('Ошибка инициализации WaveSurfer:', err);
+      setError('Ошибка инициализации WaveSurfer: ' + err.message);
+    }
+  }, [audioBuffer, mode]);
 
   useEffect(() => {
-    if (player) player.volume.value = volume;
+    if (!isPlaying || !wavesurferRef.current || !startTimeRef.current) return;
+
+    const updateWaveformPosition = () => {
+      if (!wavesurferRef.current || !audioBuffer) return;
+      const currentTime = Tone.now() - startTimeRef.current;
+      const duration = audioBuffer.duration;
+      if (currentTime <= duration) {
+        wavesurferRef.current.seekTo(currentTime / duration);
+      } else if (isPlaying) {
+        handleStop();
+      }
+    };
+
+    const interval = setInterval(updateWaveformPosition, 100);
+    return () => clearInterval(interval);
+  }, [isPlaying, audioBuffer]);
+
+  useEffect(() => {
+    if (player) {
+      player.volume.value = volume;
+    }
   }, [volume, player]);
 
   useEffect(() => {
-    if (player) player.playbackRate = playbackRate;
+    if (player) {
+      player.playbackRate = playbackRate;
+    }
   }, [playbackRate, player]);
 
   useEffect(() => {
-    if (pitchShift) pitchShift.pitch = pitch;
+    if (pitchShift) {
+      pitchShift.pitch = pitch;
+    }
   }, [pitch, pitchShift]);
+
+  const handleSeek = async (seekTime, shouldPlay = false) => {
+    if (!player || !audioBuffer) return;
+
+    const duration = audioBuffer.duration;
+    if (seekTime < 0 || seekTime > duration) return;
+
+    try {
+      if (Tone.context.state !== 'running') {
+        await Tone.start();
+      }
+
+      if (player.state === 'started') {
+        player.stop();
+      }
+
+      positionRef.current = seekTime;
+      startTimeRef.current = Tone.now() - seekTime;
+
+      if (wavesurferRef.current) {
+        wavesurferRef.current.seekTo(seekTime / duration);
+      }
+
+      if (shouldPlay || isPlaying || isPaused) {
+        player.start(Tone.now(), seekTime);
+        setIsPlaying(true);
+        setIsPaused(false);
+      }
+    } catch (error) {
+      console.error('Ошибка в handleSeek:', error);
+      setError('Ошибка перемотки: ' + error.message);
+    }
+  };
 
   const analyzeTrackFrequencies = async (buffer) => {
     if (!buffer) return;
@@ -220,40 +284,156 @@ const EqualizerCube = () => {
     }
   };
 
+  const validateAudioFile = (file) => {
+    return new Promise((resolve, reject) => {
+      // Проверка размера файла
+      if (file.size > MAX_FILE_SIZE) {
+        console.error('Ошибка: Файл слишком большой', { size: file.size });
+        reject(new Error('Файл слишком большой. Максимальный размер: 100 МБ.'));
+        return;
+      }
+  
+      // Проверка MIME-типа и расширения
+      const validMimeTypes = ['audio/mpeg', 'audio/wav', 'application/octet-stream'];
+      const validExtensions = ['.mp3', '.wav'];
+      const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+      const isMimeValid = validMimeTypes.includes(file.type) || file.type === '';
+      const isExtensionValid = validExtensions.includes(fileExtension);
+  
+      if (!isMimeValid || !isExtensionValid) {
+        console.error('Ошибка: Неподдерживаемый формат', {
+          mimeType: file.type,
+          extension: fileExtension,
+        });
+        reject(new Error('Неподдерживаемый формат файла. Используйте WAV или MP3.'));
+        return;
+      }
+  
+      // Проверка с music-metadata-browser
+      musicMetadata.parseBlob(file, { duration: false, native: true }).then(metadata => {
+        const format = metadata.format;
+        console.log('Метаданные файла:', { container: format.container });
+        if (['mpeg', 'wav'].includes(format.container?.toLowerCase())) {
+          resolve(true);
+        } else {
+          console.error('Ошибка: Неподдерживаемый контейнер', { container: format.container });
+          reject(new Error('Файл не является валидным аудиофайлом (MP3 или WAV).'));
+        }
+      }).catch(error => {
+        console.error('Ошибка проверки метаданных:', error);
+        // Запасной вариант: проверка заголовков
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const buffer = e.target.result;
+          const view = new DataView(buffer);
+  
+          // Проверка WAV (RIFF)
+          const isWav =
+            view.getUint8(0) === 0x52 && // R
+            view.getUint8(1) === 0x49 && // I
+            view.getUint8(2) === 0x46 && // F
+            view.getUint8(3) === 0x46;   // F
+  
+          // Проверка MP3 (ID3 или синхронизация фрейма)
+          const isMp3 =
+            (view.getUint8(0) === 0x49 && view.getUint8(1) === 0x44 && view.getUint8(2) === 0x33) || // ID3
+            (view.getUint8(0) === 0xFF && (view.getUint8(1) & 0xE0) === 0xE0); // MP3 frame sync
+  
+          if (isWav && fileExtension === '.wav') {
+            console.log('Файл подтверждён как WAV по заголовку RIFF');
+            resolve(true);
+          } else if (isMp3 && fileExtension === '.mp3') {
+            console.log('Файл подтверждён как MP3 по заголовку ID3 или фрейму');
+            resolve(true);
+          } else {
+            console.error('Ошибка: Файл не является WAV или MP3', {
+              firstBytes: Array.from(new Uint8Array(buffer).slice(0, 4)),
+              extension: fileExtension,
+            });
+            reject(new Error('Файл не является валидным аудиофайлом (MP3 или WAV).'));
+          }
+        };
+        reader.onerror = () => {
+          console.error('Ошибка чтения файла');
+          reject(new Error('Ошибка чтения файла.'));
+        };
+        reader.readAsArrayBuffer(file.slice(0, 128)); // Читаем первые 128 байт
+      });
+    });
+  };
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      try {
-        if (Tone.context.state !== 'running') {
-          await Tone.start();
-          console.log('Audio context started.');
-        }
+    if (!file) {
+      setError('Выберите аудиофайл');
+      return;
+    }
 
-        const url = URL.createObjectURL(file);
-        await player.load(url);
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        const audioContext = Tone.context;
-        const buffer = await audioContext.decodeAudioData(arrayBuffer);
-        console.log('Buffer loaded:', buffer);
+    let url = null;
 
-        setAudioBuffer(buffer);
-        setOriginalAudioBuffer(buffer);
-        setTrimStart(0);
-        setTrimEnd(1);
-        positionRef.current = 0;
-        setVolume(0);
-        setPlaybackRate(1);
-        setPitch(0);
-        setError('');
-        setFileSelected(true);
+    try {
+      // Проверка файла
+      await validateAudioFile(file);
 
-        console.log('Starting frequency analysis...');
-        await analyzeTrackFrequencies(buffer);
-        console.log('Frequency analysis completed.');
-      } catch (error) {
-        setError('Ошибка загрузки аудио: ' + error.message);
-        console.error('Ошибка загрузки аудио:', error);
+      // Санируем имя файла
+      const sanitizedName = sanitizeFileName(file.name);
+      console.log('Загрузка файла:', { name: sanitizedName, type: file.type, size: file.size });
+
+      // Определяем формат файла
+      const extension = sanitizedName.split('.').pop().toLowerCase();
+      const mimeType = file.type;
+      let detectedFormat = 'WAV';
+      if (extension === 'mp3' || mimeType === 'audio/mpeg') {
+        detectedFormat = 'MP3';
+      } else if (extension === 'wav' || mimeType === 'audio/wav') {
+        detectedFormat = 'WAV';
+      } else {
+        throw new Error('Неподдерживаемый формат файла. Используйте WAV или MP3.');
+      }
+      setFormat(detectedFormat);
+
+      if (Tone.context.state !== 'running') {
+        await Tone.start();
+      }
+
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+        wavesurferRef.current = null;
+      }
+
+      url = URL.createObjectURL(file);
+      await player.load(url);
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Не удалось загрузить файл');
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      const audioContext = Tone.context;
+      const buffer = await audioContext.decodeAudioData(arrayBuffer);
+
+      setAudioBuffer(buffer);
+      setOriginalAudioBuffer(buffer);
+      setTrimStart(0);
+      setTrimEnd(1);
+      positionRef.current = 0;
+      setVolume(0);
+      setPlaybackRate(1);
+      setPitch(0);
+      setError('');
+      setFileSelected(true);
+      setTrackName(sanitizedName);
+
+      await analyzeTrackFrequencies(buffer);
+    } catch (error) {
+      console.error('Ошибка загрузки аудио:', error);
+      setError(error.message || 'Ошибка загрузки аудио');
+      setFileSelected(false);
+      setTrackName('');
+      setFormat('WAV');
+    } finally {
+      if (url) {
+        URL.revokeObjectURL(url);
       }
     }
   };
@@ -266,17 +446,35 @@ const EqualizerCube = () => {
     filters[index].gain.value = parseFloat(value);
   };
 
-  const handlePlay = () => {
-    if (player && player.state === 'stopped') {
-      if (!isPlaying && !isPaused) {
-        player.start(0);
-        startTimeRef.current = Tone.now();
-        setIsPlaying(true);
-      } else if (isPaused) {
-        player.start(Tone.now(), positionRef.current);
-        startTimeRef.current = Tone.now() - positionRef.current;
-        setIsPlaying(true);
-        setIsPaused(false);
+  const handlePlay = async () => {
+    if (!player || !audioBuffer) return;
+
+    if (player.state === 'stopped') {
+      try {
+        if (Tone.context.state !== 'running') {
+          await Tone.start();
+        }
+
+        if (!isPlaying && !isPaused) {
+          player.start(0);
+          startTimeRef.current = Tone.now();
+          positionRef.current = 0;
+          setIsPlaying(true);
+          if (wavesurferRef.current) {
+            wavesurferRef.current.seekTo(0);
+          }
+        } else if (isPaused) {
+          player.start(Tone.now(), positionRef.current);
+          startTimeRef.current = Tone.now() - positionRef.current;
+          setIsPlaying(true);
+          setIsPaused(false);
+          if (wavesurferRef.current) {
+            wavesurferRef.current.seekTo(positionRef.current / audioBuffer.duration);
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка в handlePlay:', error);
+        setError('Ошибка воспроизведения: ' + error.message);
       }
     }
   };
@@ -297,27 +495,10 @@ const EqualizerCube = () => {
       setIsPaused(false);
       positionRef.current = 0;
       startTimeRef.current = null;
+      if (wavesurferRef.current) {
+        wavesurferRef.current.seekTo(0);
+      }
     }
-  };
-
-  const handleMouseDown = (e) => {
-    if (mode !== 'trim' || !audioBuffer) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / canvas.width;
-    setTrimStart(Math.max(0, Math.min(1, x)));
-    setTrimEnd(Math.max(0, Math.min(1, x)));
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e) => {
-    if (mode !== 'trim' || !isDragging || !audioBuffer) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / canvas.width;
-    setTrimEnd(Math.max(0, Math.min(1, x)));
   };
 
   const handleMouseUp = () => {
@@ -337,7 +518,7 @@ const EqualizerCube = () => {
       const newLength = endSample - startSample;
 
       if (newLength <= 0) {
-        console.error('Длина обрезанного участка должна быть больше 0');
+        setError('Длина обрезки должна быть больше 0');
         return;
       }
 
@@ -359,6 +540,8 @@ const EqualizerCube = () => {
 
       const newPlayer = new Tone.Player(newBuffer).toDestination();
       newPlayer.chain(...filters, pitchShift, Tone.Destination);
+      newPlayer.volume.value = volume;
+      newPlayer.playbackRate = playbackRate;
       const analyser = new Tone.Analyser('waveform', 1024);
       newPlayer.connect(analyser);
       analyserRef.current = analyser;
@@ -373,31 +556,41 @@ const EqualizerCube = () => {
       positionRef.current = 0;
       startTimeRef.current = null;
 
-      await analyzeTrackFrequencies(newBuffer);
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+        wavesurferRef.current = null;
+      }
 
-      newPlayer.start(0);
-      startTimeRef.current = Tone.now();
-      setIsPlaying(true);
+      await analyzeTrackFrequencies(newBuffer);
     } catch (error) {
-      setError('Ошибка при обрезке аудио: ' + error.message);
       console.error('Ошибка при обрезке аудио:', error);
+      setError('Ошибка при обрезке аудио: ' + error.message);
     }
   };
 
-  const handleResetTrack = () => {
-    if (!originalAudioBuffer) return;
+  const handleResetTrack = async () => {
+    if (!originalAudioBuffer) {
+      setError('Исходный трек недоступен');
+      return;
+    }
 
     try {
       if (player.state === 'started') player.stop();
 
       const newPlayer = new Tone.Player(originalAudioBuffer).toDestination();
       newPlayer.chain(...filters, pitchShift, Tone.Destination);
+      newPlayer.volume.value = 0;
+      newPlayer.playbackRate = 1;
       const analyser = new Tone.Analyser('waveform', 1024);
       newPlayer.connect(analyser);
       analyserRef.current = analyser;
 
-      setPlayer(newPlayer);
-      setAudioBuffer(originalAudioBuffer);
+      setVolume(0);
+      setPlaybackRate(1);
+      setPitch(0);
+      setEqValues(Array(frequencies.length).fill(0));
+      filters.forEach((filter) => (filter.gain.value = 0));
+      if (pitchShift) pitchShift.pitch = 0;
       setTrimStart(0);
       setTrimEnd(1);
       setIsTrimming(false);
@@ -405,14 +598,17 @@ const EqualizerCube = () => {
       setIsPaused(false);
       positionRef.current = 0;
       startTimeRef.current = null;
-      setVolume(0);
-      setPlaybackRate(1);
-      setPitch(0);
 
-      analyzeTrackFrequencies(originalAudioBuffer);
+      setPlayer(newPlayer);
+      setAudioBuffer(null);
+      setTimeout(() => {
+        setAudioBuffer(originalAudioBuffer);
+      }, 0);
+
+      await analyzeTrackFrequencies(originalAudioBuffer);
     } catch (error) {
-      setError('Ошибка при сбросе трека: ' + error.message);
       console.error('Ошибка при сбросе трека:', error);
+      setError('Ошибка при сбросе трека: ' + error.message);
     }
   };
 
@@ -427,6 +623,11 @@ const EqualizerCube = () => {
     const analyser = new Tone.Analyser('waveform', 1024);
     newPlayer.connect(analyser);
     analyserRef.current = analyser;
+
+    if (wavesurferRef.current) {
+      wavesurferRef.current.destroy();
+      wavesurferRef.current = null;
+    }
 
     setPlayer(newPlayer);
     setAudioBuffer(null);
@@ -444,6 +645,8 @@ const EqualizerCube = () => {
     setEqValues(Array(frequencies.length).fill(0));
     setFileSelected(false);
     setError('');
+    setTrackName('');
+    setFormat('WAV');
   };
 
   const presets = {
@@ -463,11 +666,9 @@ const EqualizerCube = () => {
   };
 
   const handleModeClick = (newMode) => {
-    // Переключаем режим
     setActiveMode(activeMode === newMode ? null : newMode);
     setMode(newMode);
 
-    // Плавная прокрутка к блоку audioProcessingSection
     if (audioProcessingRef.current) {
       audioProcessingRef.current.scrollIntoView({
         behavior: 'smooth',
@@ -491,6 +692,105 @@ const EqualizerCube = () => {
     setPitch(newPitch);
   };
 
+  const handleFormatToggle = () => {
+    setFormat(format === 'WAV' ? 'MP3' : 'WAV');
+  };
+
+  const bufferToWave = (buffer) => {
+    try {
+      if (!buffer || buffer.length === 0 || !buffer.numberOfChannels || !buffer.sampleRate) {
+        throw new Error('Невалидный аудио буфер');
+      }
+
+      const numOfChan = buffer.numberOfChannels;
+      const length = buffer.length * numOfChan * 2;
+      const arrayBuffer = new ArrayBuffer(44 + length);
+      const view = new DataView(arrayBuffer);
+
+      const writeString = (view, offset, string) => {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      };
+
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + length, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numOfChan, true);
+      view.setUint32(24, buffer.sampleRate, true);
+      view.setUint32(28, buffer.sampleRate * numOfChan * 2, true);
+      view.setUint16(32, numOfChan * 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, length, true);
+
+      let offset = 44;
+      for (let i = 0; i < buffer.length; i++) {
+        for (let channel = 0; channel < numOfChan; channel++) {
+          const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+          const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, value, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([arrayBuffer], { type: 'audio/wav' });
+    } catch (error) {
+      console.error('Ошибка в bufferToWave:', error);
+      setError('Ошибка создания WAV: ' + error.message);
+      return null;
+    }
+  };
+
+  const bufferToMp3 = (buffer) => {
+    try {
+      if (!buffer || buffer.length === 0 || !buffer.numberOfChannels || !buffer.sampleRate) {
+        throw new Error('Невалидный аудио буфер');
+      }
+
+      const numOfChan = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate;
+      const mp3encoder = new lamejs.Mp3Encoder(numOfChan, sampleRate, 128);
+      const samplesPerChannel = buffer.length;
+      const mp3Data = [];
+
+      const left = new Int16Array(samplesPerChannel);
+      const right = numOfChan === 2 ? new Int16Array(samplesPerChannel) : null;
+
+      for (let i = 0; i < samplesPerChannel; i++) {
+        left[i] = Math.max(-1, Math.min(1, buffer.getChannelData(0)[i])) * 0x7FFF;
+        if (numOfChan === 2) {
+          right[i] = Math.max(-1, Math.min(1, buffer.getChannelData(1)[i])) * 0x7FFF;
+        }
+      }
+
+      const sampleBlockSize = 1152;
+      for (let i = 0; i < samplesPerChannel; i += sampleBlockSize) {
+        const leftChunk = left.subarray(i, i + sampleBlockSize);
+        const rightChunk = right ? right.subarray(i, i + sampleBlockSize) : leftChunk;
+        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+        if (mp3buf.length > 0) {
+          mp3Data.push(mp3buf);
+        }
+      }
+
+      const mp3buf = mp3encoder.flush();
+      if (mp3buf.length > 0) {
+        mp3Data.push(mp3buf);
+      }
+
+      const mp3Blob = new Blob(mp3Data, { type: 'audio/mp3' });
+      return mp3Blob;
+    } catch (error) {
+      console.error('Ошибка в bufferToMp3:', error);
+      setError('Ошибка создания MP3: ' + error.message);
+      return null;
+    }
+  };
+
   const handleSaveAudio = async () => {
     if (!audioBuffer) {
       setError('Нет обработанного аудио для сохранения');
@@ -506,6 +806,7 @@ const EqualizerCube = () => {
 
       const source = offlineContext.createBufferSource();
       source.buffer = audioBuffer;
+      source.playbackRate.value = playbackRate;
 
       const filterNodes = frequencies.map((freq, index) => {
         const filter = offlineContext.createBiquadFilter();
@@ -529,76 +830,35 @@ const EqualizerCube = () => {
 
       source.start(0);
       const renderedBuffer = await offlineContext.startRendering();
-      const blob = await bufferToWave(renderedBuffer, format);
+
+      let blob;
+      let fileName;
+
+      if (format === 'MP3') {
+        blob = bufferToMp3(renderedBuffer);
+        fileName = 'processed_audio.mp3';
+      } else {
+        blob = bufferToWave(renderedBuffer);
+        fileName = 'processed_audio.wav';
+      }
+
+      if (!blob) {
+        throw new Error(`Не удалось создать файл в формате ${format}`);
+      }
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `processed_audio.${format.toLowerCase()}`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       setError('');
-    } catch (err) {
-      setError('Ошибка при сохранении аудио: ' + err.message);
-      console.error('Ошибка при сохранении аудио:', err);
+    } catch (error) {
+      console.error('Ошибка при сохранении аудио:', error);
+      setError('Ошибка при сохранении аудио: ' + error.message);
     }
-  };
-
-  const bufferToWave = (buffer, format) => {
-    const numOfChan = buffer.numberOfChannels;
-    const length = buffer.length * numOfChan * 2 + 44;
-    const arrayBuffer = new ArrayBuffer(length);
-    const view = new DataView(arrayBuffer);
-
-    const writeString = (view, offset, string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-
-    let offset = 0;
-    writeString(view, offset, 'RIFF');
-    offset += 4;
-    view.setUint32(offset, 36 + buffer.length * numOfChan * 2, true);
-    offset += 4;
-    writeString(view, offset, 'WAVE');
-    offset += 4;
-    writeString(view, offset, 'fmt ');
-    offset += 4;
-    view.setUint32(offset, 16, true);
-    offset += 4;
-    view.setUint16(offset, 1, true);
-    offset += 2;
-    view.setUint16(offset, numOfChan, true);
-    offset += 2;
-    view.setUint32(offset, buffer.sampleRate, true);
-    offset += 4;
-    view.setUint32(offset, buffer.sampleRate * numOfChan * 2, true);
-    offset += 4;
-    view.setUint16(offset, numOfChan * 2, true);
-    offset += 2;
-    view.setUint16(offset, 16, true);
-    offset += 2;
-    writeString(view, offset, 'data');
-    offset += 4;
-    view.setUint32(offset, buffer.length * numOfChan * 2, true);
-    offset += 4;
-
-    const samples = [];
-    for (let i = 0; i < buffer.length; i++) {
-      for (let channel = 0; channel < numOfChan; channel++) {
-        const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
-        samples.push(sample < 0 ? sample * 0x8000 : sample * 0x7FFF);
-      }
-    }
-
-    for (let i = 0; i < samples.length; i++) {
-      view.setInt16(offset, samples[i], true);
-      offset += 2;
-    }
-
-    return new Blob([arrayBuffer], { type: format === 'MP3' ? 'audio/mpeg' : 'audio/wav' });
   };
 
   return (
@@ -617,8 +877,8 @@ const EqualizerCube = () => {
               src={eqVolumeGif}
               alt="Используй эквалайзер"
               className="eqVolumeGif"
-              onClick={() => handleModeClick('equalizer')} // Добавляем обработчик для GIF
-              style={{ cursor: 'pointer' }} // Добавляем курсор, чтобы показать, что это кликабельно
+              onClick={() => handleModeClick('equalizer')}
+              style={{ cursor: 'pointer' }}
             />
             <p className="t4">Используй эквалайзер</p>
             <Link to='/track-separation'>
@@ -634,7 +894,7 @@ const EqualizerCube = () => {
         <div className="file-upload-container">
           <input
             type="file"
-            accept="audio/*"
+            accept="audio/mpeg,audio/wav"
             onChange={handleFileUpload}
             id="audio-upload"
             className="audio-upload-input"
@@ -651,14 +911,10 @@ const EqualizerCube = () => {
         {error && <p className="error">{error}</p>}
 
         {audioBuffer && (
-          <canvas
-            ref={canvasRef}
-            width="800"
-            height="100"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-          />
+          <div className="trackItem">
+            {trackName && <p className="trackTitle">{trackName}</p>}
+            <div ref={waveformContainerRef} className="waveform" onMouseUp={handleMouseUp} />
+          </div>
         )}
 
         <div className="mode-controls">
@@ -691,9 +947,9 @@ const EqualizerCube = () => {
             onClick={() => handleModeClick('pitch')}
           >
             <div className="mode-icon">
-              <img src={pitchIcon} alt="Тональность" className={activeMode === 'pitch' ? 'active' : ''} />
+              <img src={pitchIcon} alt="Изменение высоты тона" className={activeMode === 'pitch' ? 'active' : ''} />
             </div>
-            <span className="mode-text">Тональность</span>
+            <span className="mode-text">Изменение высоты тона</span>
           </div>
           <div
             className={`mode-item ${activeMode === 'equalizer' ? 'active' : ''}`}
@@ -706,194 +962,146 @@ const EqualizerCube = () => {
           </div>
         </div>
 
-        {activeMode && (
-          <>
-            {mode === 'equalizer' && (
-              <div className="equalizer-section">
-                <div className="preset-controls">
-                  <span
-                    onClick={() => applyPreset('default')}
-                    style={{ cursor: 'pointer' }}
-                    className="t15"
-                  >
-                    По умолчанию
-                  </span>
-                  <span
-                    onClick={() => applyPreset('classical')}
-                    style={{ cursor: 'pointer' }}
-                    className="t16"
-                  >
-                    Классика
-                  </span>
-                  <span
-                    onClick={() => applyPreset('dance')}
-                    style={{ cursor: 'pointer' }}
-                    className="t17"
-                  >
-                    Танцевальная
-                  </span>
-                  <span
-                    onClick={() => applyPreset('club')}
-                    style={{ cursor: 'pointer' }}
-                    className="t18"
-                  >
-                    Клуб микс
-                  </span>
-                  <span
-                    onClick={() => applyPreset('boost')}
-                    style={{ cursor: 'pointer' }}
-                    className="t19"
-                  >
-                    Усиление
-                  </span>
-                </div>
-
-                <div className="equalizer-controls">
-                  {frequencies.map((freq, index) => (
-                    <div key={freq} className="eq-band">
-                      <input
-                        type="range"
-                        min="-30"
-                        max="30"
-                        step="0.1"
-                        value={eqValues[index]}
-                        onChange={(e) => adjustEQ(index, e.target.value)}
-                        orient="vertical"
-                        aria-label={`Adjust gain for ${freq} Hz`}
-                      />
-                      <label>{freq} Hz</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {mode === 'trim' && (
-              <div className="trim-controls">
-                <button onClick={handleTrim} disabled={!isTrimming} className="neonButton">
-                  Применить обрезку
-                </button>
-                <button onClick={handleResetTrack} disabled={!audioBuffer} className="neonButton">
-                  Сбросить трек
-                </button>
-              </div>
-            )}
-
-            {mode === 'volume' && (
-              <div className="volume-controls">
-                <label>Громкость: {Math.round(volume)} dB</label>
-                <input
-                  type="range"
-                  min="-60"
-                  max="0"
-                  step="1"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  aria-label="Adjust volume"
-                />
-              </div>
-            )}
-
-            {mode === 'speed' && (
-              <div className="speed-controls">
-                <label>Скорость: {playbackRate.toFixed(2)}x</label>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  value={playbackRate}
-                  onChange={handleSpeedChange}
-                  aria-label="Adjust playback speed"
-                />
-              </div>
-            )}
-
-            {mode === 'pitch' && (
-              <div className="pitch-controls">
-                <label>Тональность: {pitch} полутонов</label>
-                <input
-                  type="range"
-                  min="-12"
-                  max="12"
-                  step="1"
-                  value={pitch}
-                  onChange={handlePitchChange}
-                  aria-label="Adjust pitch"
-                />
-              </div>
-            )}
-
-            <div className="audio-controls">
-              <div className="control-group-left">
-                <button
-                  onClick={handlePlay}
-                  disabled={isPlaying && !isPaused}
-                  className="play"
-                >
-                  Играть
-                </button>
-                <button onClick={handlePause} disabled={!isPlaying} className="pause">
-                  Пауза
-                </button>
-                <button
-                  onClick={handleStop}
-                  disabled={!isPlaying && !isPaused}
-                  className="stop"
-                >
-                  Стоп
-                </button>
-              </div>
-              <div className="control-group-right">
-                <button
-                  onClick={() => setFormat(format === 'MP3' ? 'WAV' : 'MP3')}
-                  className="formatButton"
-                >
-                  {format}
-                </button>
-                <button
-                  onClick={handleSaveAudio}
-                  disabled={!audioBuffer}
-                  className="saveButton"
-                >
-                  Сохранить
-                </button>
-              </div>
+        {activeMode === 'equalizer' && (
+          <div className="equalizer-section">
+            <div className="preset-controls">
+              <button className="t15" onClick={() => applyPreset('default')}>
+                Default
+              </button>
+              <button className="t16" onClick={() => applyPreset('classical')}>
+                Classical
+              </button>
+              <button className="t17" onClick={() => applyPreset('dance')}>
+                Dance
+              </button>
+              <button className="t18" onClick={() => applyPreset('club')}>
+                Club
+              </button>
+              <button className="t19" onClick={() => applyPreset('boost')}>
+                Boost
+              </button>
             </div>
-          </>
+            <div className="equalizer-controls">
+              {frequencies.map((freq, index) => (
+                <div key={freq} className="eq-band">
+                  <input
+                    type="range"
+                    min="-30"
+                    max="30"
+                    value={eqValues[index]}
+                    onChange={(e) => adjustEQ(index, e.target.value)}
+                  />
+                  <label>{freq} Hz</label>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
+
+        {activeMode === 'trim' && (
+          <div className="trim-controls">
+            <button className="neonButton" onClick={handleTrim}>
+              Применить обрезку
+            </button>
+          </div>
+        )}
+
+        {activeMode === 'volume' && (
+          <div className="volume-controls">
+            <input
+              type="range"
+              min="-60"
+              max="12"
+              value={volume}
+              onChange={handleVolumeChange}
+            />
+            <span>{volume.toFixed(1)} dB</span>
+          </div>
+        )}
+
+        {activeMode === 'speed' && (
+          <div className="speed-controls">
+            <input
+              type="range"
+              min="0.5"
+              max="2"
+              step="0.1"
+              value={playbackRate}
+              onChange={handleSpeedChange}
+            />
+            <span>{playbackRate.toFixed(1)}x</span>
+          </div>
+        )}
+
+        {activeMode === 'pitch' && (
+          <div className="pitch-controls">
+            <input
+              type="range"
+              min="-12"
+              max="12"
+              value={pitch}
+              onChange={handlePitchChange}
+            />
+            <span>{pitch} semitones</span>
+          </div>
+        )}
+
+        <div className="audio-controls">
+          <div className="control-group-left">
+            <button className="play" onClick={handlePlay}>
+              Воспроизвести
+            </button>
+            <button className="pause" onClick={handlePause}>
+              Пауза
+            </button>
+            <button className="stop" onClick={handleStop}>
+              Стоп
+            </button>
+            <button className="resetButton" onClick={handleResetTrack}>
+              Сбросить всё
+            </button>
+          </div>
+          <div className="control-group-right">
+            <button className="formatButton" onClick={handleFormatToggle}>
+              {format}
+            </button>
+            <button className="saveButton" onClick={handleSaveAudio}>
+              Сохранить
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="frequencySection">
-        <p className="t8">Изменяйте частоты для получения персонализированного звучания</p>
+        <h2 className="t8">Частотные диапазоны</h2>
         <div className="cont5">
           <div className="bass">
-            <img src={guitarIcon} alt="bass" className="guitarIcon" />
-            <p className="t9">Bass</p>
-            <p className="t10">Отрегулируйте низкие частоты для получения громких ударов</p>
-          </div>
-          <div className="treble">
-            <img src={boomBoxIcon} alt="treble" className="boomBoxIcon" />
-            <p className="t11">Treble</p>
-            <p className="t12">Усиление высоких нот для получения четкого звучания</p>
+            <img src={boomBoxIcon} alt="Bass" className="boomBoxIcon" />
+            <h3 className="t9">Bass</h3>
+            <p className="t10">Низкие частоты (20-250 Hz)</p>
           </div>
           <div className="midr">
-            <img src={midRangeIcon} alt="mid range" className="midRangeIcon" />
-            <p className="t13">Mid Range</p>
-            <p className="t14">Контролируйте средние частоты для сбалансированного звучания</p>
+            <img src={midRangeIcon} alt="Mid Range" className="midRangeIcon" />
+            <h3 className="t11">Mid Range</h3>
+            <p className="t12">Средние частоты (250 Hz-4 kHz)</p>
+          </div>
+          <div className="treble">
+            <img src={guitarIcon} alt="Treble" className="guitarIcon" />
+            <h3 className="t13">Treble</h3>
+            <p className="t14">Высокие частоты (4 kHz-20 kHz)</p>
           </div>
         </div>
       </div>
 
       <div className="mixerSection">
         <div className="mixerContent">
-          <img src={mixerBanner} alt="Микшер" className="mixerBanner" />
+          <img src={mixerBanner} alt="Mixer Banner" className="mixerBanner" />
           <div className="mixerText">
-            <p className="t6">Готовы к Mix & Track?</p>
-            <p className="t7">Перейдите на страницу сведения и треков</p>
+            <h2 className="t6">Попробуй функцию сведения</h2>
+            <p className="t7">Используй наш микшер для создания уникального звучания</p>
           </div>
           <Link to="/audio-enhancement">
-            <button className="button1">Попробовать</button>
+            <button className="button1">Создать сейчас</button>
           </Link>
         </div>
       </div>

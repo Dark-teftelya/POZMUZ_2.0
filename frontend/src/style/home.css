@@ -202,29 +202,96 @@ body {
 }
 
 .features-image-container {
-    width: 190px;
-    height: 190px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: row; /* Горизонтальное расположение */
+    justify-content: flex-start; /* Изображение слева */
+    align-items: center; /* Вертикальное центрирование */
+    gap: 10px; /* Минимальный отступ между элементами */
     background: rgba(255, 255, 255, 0.15);
-    border-radius: 50px;
-    margin-bottom: 40px;
-    box-shadow: 0 0 20px var(--neon-blue);
+    border-radius: 25px; /* Компактное скругление */
+    padding: 8px; /* Минимальный внутренний отступ */
+    box-shadow: 0 0 12px var(--neon-blue); /* Лёгкая тень */
+    margin: 0 auto 20px auto; /* Центрирование, уменьшенный отступ снизу */
+    width: 80%; /* Ширина 80% для больших экранов */
+    box-sizing: border-box;
+    max-width: 100%; /* Предотвращает выход за рамки */
 }
 
 .image2 {
-    width: 190px;
-    height: 190px;
-    border-radius: 50px;
+    width: 150px; /* Уменьшено для десктопа */
+    height: 150px;
+    border-radius: 20px; /* Соответствует контейнеру */
+    flex-shrink: 0; /* Изображение не сжимается */
+    object-fit: cover; /* Сохраняет пропорции */
 }
 
 .features-title {
     font-family: 'Press Start 2P', cursive;
-    font-size: clamp(28px, 5vw, 40px);
+    font-size: clamp(18px, 3.5vw, 24px); /* Компактный шрифт */
     color: var(--white);
-    text-shadow: 0 0 15px var(--neon-green);
-    margin-bottom: 40px;
+    text-shadow: 0 0 10px var(--neon-green); /* Лёгкая тень */
+    white-space: nowrap; /* Текст не переносится */
+    flex-grow: 1; /* Занимает доступное пространство */
+    text-align: center; /* Центрирование текста */
+}
+
+@media (max-width: 768px) {
+    .features-image-container {
+        position: relative; /* Для позиционирования текста */
+        display: flex;
+        justify-content: center; /* Центрирование изображения */
+        align-items: center;
+        padding: 6px; /* Компактный отступ */
+        border-radius: 15px; /* Меньше скругление */
+        width: 90%; /* Для мобильных */
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 12px var(--neon-blue);
+        box-sizing: border-box;
+        max-width: 100%; /* Предотвращает выход за рамки */
+        min-width: 0; /* Предотвращает переполнение */
+    }
+
+    .image2 {
+        width: 60px; /* Компактное изображение */
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover; /* Сохраняет пропорции */
+        margin: 0 auto; /* Дополнительное центрирование */
+    }
+
+    .features-title {
+        position: absolute; /* Поверх изображения */
+        top: 90%; /* Центр по вертикали */
+        left: -60%; /* Центр по горизонтали */
+        transform: translate(-50%, -50%);
+        font-family: 'Press Start 2P', cursive;
+        font-size: clamp(10px, 2.5vw, 14px); /* Компактный шрифт */
+        color: var(--white);
+        text-shadow: 0 0 10px var(--neon-green); /* Лёгкая тень */
+        white-space: nowrap; /* Текст не переносится */
+        text-align: center; /* Гарантирует центрирование */
+        margin: 0; /* Убираем любые отступы */
+        padding: 0; /* Убираем внутренние отступы */
+    }
+}
+
+@media (max-width: 480px) {
+    .features-image-container {
+        width: 95%; /* Максимальная ширина */
+        padding: 5px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+
+    .image2 {
+        width: 50px; /* Минимальный размер */
+        height: 50px;
+        border-radius: 10px;
+    }
+
+    .features-title {
+        font-size: clamp(8px, 2vw, 12px); /* Минимальный шрифт */
+    }
 }
 
 .features-container {
@@ -968,6 +1035,7 @@ body {
         padding: 10px;
         width: 100%;
         text-align: center;
+        margin: 10px;
     }
 
     .logo-container {
@@ -1002,7 +1070,7 @@ body {
         width: 30px;
         height: 30px;
         position: absolute;
-        right: 25px;
+        left: 345px;
         top: calc(50% + 10px);
         transform: translateY(-50%);
         cursor: pointer;

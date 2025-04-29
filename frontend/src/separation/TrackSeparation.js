@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import WaveSurfer from 'wavesurfer.js';
+import { Modal, Button } from 'react-bootstrap';
 import '../style/trackSeparation.css';
 import icon1 from '../assets/icons_music.png';
 import icon2 from '../assets/icons_gen.png';
+import boostyIcon from '../assets/boosty_icon.png';
 import { API_BASE_URL } from '../config';
 
 const CustomRangeSlider = ({ trackId, defaultValue, onVolumeChange }) => {
@@ -73,9 +75,12 @@ const TrackSeparation = () => {
   const [tracks, setTracks] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [queueStatus, setQueueStatus] = useState(null); // null, 'queued', 'processing'
+  const [queueStatus, setQueueStatus] = useState(null);
   const [isPlaying, setIsPlaying] = useState({});
   const [activeMode, setActiveMode] = useState(null);
+  const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [nextMode, setNextMode] = useState(null);
   const wavesurferRefs = useRef({});
 
   const handleFileChange = (event) => {
@@ -157,24 +162,8 @@ const TrackSeparation = () => {
     }
   };
 
-  const handleGenerateSound = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await axios.get(`${API_BASE_URL}/api/generate/`);
-      console.log('Ответ от /api/generate/:', response.data);
-      if (response.data.tracks && response.data.tracks.length > 0) {
-        setTracks((prev) => [...prev, ...response.data.tracks]);
-      } else {
-        setError(new Error('Сервер вернул пустой список треков.'));
-      }
-    } catch (error) {
-      console.error('Ошибка генерации звука:', error);
-      setError(new Error('Не удалось сгенерировать звук: ' + error.message));
-    } finally {
-      setLoading(false);
-    }
+  const handleGenerateSound = () => {
+    setShowGenerateModal(true);
   };
 
   useEffect(() => {
@@ -262,28 +251,105 @@ const TrackSeparation = () => {
   };
 
   const handleSwitchMode = (newMode) => {
-    if (tracks.length > 0 || error) {
-      const confirmSwitch = window.confirm(
-        `Вы уверены, что хотите переключиться на "${newMode === 'separation' ? 'Разделение' : 'Генерацию'} "? Все текущие треки будут сброшены.`
-      );
-      if (!confirmSwitch) return;
+    // Показываем модальное окно, если текущий режим активен и есть треки, ошибка или загружен файл
+    if (activeMode && (tracks.length > 0 || error || file)) {
+      setNextMode(newMode);
+      setShowSwitchModal(true);
+    } else {
+      setTracks([]);
+      Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
+      wavesurferRefs.current = {};
+      setIsPlaying({});
+      setQueueStatus(null);
+      if (newMode === 'separation' && error && error.message.includes('сгенерировать')) {
+        setError(null);
+      }
+      setFile(null);
+      setActiveMode(newMode);
     }
+  };
 
+  const confirmSwitchMode = () => {
     setTracks([]);
     Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
     wavesurferRefs.current = {};
     setIsPlaying({});
     setQueueStatus(null);
-
-    if (newMode === 'separation' && error && error.message.includes('сгенерировать')) {
+    if (nextMode === 'separation' && error && error.message.includes('сгенерировать')) {
       setError(null);
     }
     setFile(null);
-    setActiveMode(newMode);
+    setActiveMode(nextMode);
+    setShowSwitchModal(false);
+    setNextMode(null);
+  };
+
+  const cancelSwitchMode = () => {
+    setShowSwitchModal(false);
+    setNextMode(null);
+  };
+
+  const closeGenerateModal = () => {
+    setShowGenerateModal(false);
   };
 
   return (
     <div className="container">
+      {/* Модальное окно для переключения режимов */}
+      <Modal
+        show={showSwitchModal}
+        onHide={cancelSwitchMode}
+        centered
+        dialogClassName="neon-modal"
+      >
+        <Modal.Header>
+          <Modal.Title>Подтверждение переключения</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            Вы уверены, что хотите переключиться на "
+            {nextMode === 'separation' ? 'Разделение' : 'Генерацию'} "? Все текущие треки и загруженный файл будут сброшены.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelSwitchMode}>
+            Отмена
+          </Button>
+          <Button variant="primary" className="neon-button" onClick={confirmSwitchMode}>
+            Переключить
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Модальное окно для генерации */}
+      <Modal
+        show={showGenerateModal}
+        onHide={closeGenerateModal}
+        centered
+        dialogClassName="neon-modal"
+      >
+        <Modal.Header>
+          <Modal.Title>Функция в разработке</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Генерация звука пока в разработке. Поддержите проект на Boosty, чтобы ускорить её запуск!</p>
+          <a
+            href="https://boosty.to/teftelya05"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="boosty-link"
+          >
+            <img src={boostyIcon} alt="Boosty" className="boosty-icon" />
+            Перейти на Boosty
+          </a>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeGenerateModal}>
+            Закрыть
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {!activeMode && (
         <section className="modeSelection">
           <h2>Выберите режим</h2>
@@ -387,7 +453,6 @@ const TrackSeparation = () => {
                     title="Сохранить трек"
                     onClick={(e) => {
                       console.log(`Попытка скачать: ${filePath}`);
-                      // Можно добавить проверку доступности файла
                       fetch(filePath)
                         .then((res) => {
                           if (!res.ok) {

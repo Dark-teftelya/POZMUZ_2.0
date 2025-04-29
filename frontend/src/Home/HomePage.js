@@ -38,8 +38,8 @@ const Homepage = () => {
       <section className="features-section">
         <div className="features-image-container">
           <img src={pikImage} alt="Features" className="image2" />
+          <h2 className="features-title">Ключевые функции</h2>
         </div>
-        <h2 className="features-title">Ключевые функции</h2>
         <div className="features-container">
           <div className="feature-pair">
             <div className="feature-box" onClick={handleBoxClick}>
@@ -184,8 +184,8 @@ const Homepage = () => {
           <div className="social-block">
             <p className="social-title">Переходите в наши соцсети:</p>
             <div className="social-links">
-              <a href="https://t.me/pozmuza" target="_blank" rel="noopener noreferrer" className="social-link">
-                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111728.png" alt="Telegram" className="social-icon" />
+              <a href="https://t.me/PozMUZZ" target="_blank" rel="noopener noreferrer" className="social-link">
+                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram" className="social-icon" />
               </a>
               <a href="https://vk.com/pozmuza" target="_blank" rel="noopener noreferrer" className="social-link">
                 <img src="https://cdn-icons-png.flaticon.com/512/145/145813.png" alt="VK" className="social-icon" />
@@ -194,7 +194,7 @@ const Homepage = () => {
           </div>
           <div className="support-block">
             <p className="support-title">Поддержите проект:</p>
-            <a href="https://boosty.to/pozmuza" target="_blank" rel="noopener noreferrer" className="social-link">
+            <a href="https://boosty.to/teftelya05" target="_blank" rel="noopener noreferrer" className="social-link">
               <img src="https://cdn-icons-png.flaticon.com/512/5968/5968854.png" alt="Boosty" className="social-icon" />
             </a>
           </div>
