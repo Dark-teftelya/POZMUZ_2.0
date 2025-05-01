@@ -82,6 +82,33 @@ const TrackSeparation = () => {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [nextMode, setNextMode] = useState(null);
   const wavesurferRefs = useRef({});
+  const [userId] = useState(Math.random().toString(36).substring(2, 15)); // Генерация user_id
+
+  useEffect(() => {
+    console.log('Сгенерирован userId:', userId);
+  }, [userId]);
+
+  // Функция очистки временных файлов
+  const cleanup = async () => {
+    console.log('Очистка временных файлов для userId:', userId);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/cleanup/`, { user_id: userId });
+      console.log('Очистка завершена:', response.data);
+    } catch (error) {
+      console.error('Ошибка очистки:', error.response?.data || error.message);
+      
+    }
+  };
+
+  // Очистка при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      console.log('Размонтирование TrackSeparation, вызов cleanup');
+      cleanup();
+      Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
+      wavesurferRefs.current = {};
+    };
+  }, []);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -100,6 +127,7 @@ const TrackSeparation = () => {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('user_id', userId); // Добавляем user_id
 
     setLoading(true);
     setError(null);
@@ -163,7 +191,7 @@ const TrackSeparation = () => {
   };
 
   const handleGenerateSound = () => {
-    setShowGenerateModal(true);
+    setShowGenerateModal(true); // Показываем модальное окно
   };
 
   useEffect(() => {
@@ -251,11 +279,11 @@ const TrackSeparation = () => {
   };
 
   const handleSwitchMode = (newMode) => {
-    // Показываем модальное окно, если текущий режим активен и есть треки, ошибка или загружен файл
     if (activeMode && (tracks.length > 0 || error || file)) {
       setNextMode(newMode);
       setShowSwitchModal(true);
     } else {
+      cleanup(); // Очистка при прямом переключении
       setTracks([]);
       Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
       wavesurferRefs.current = {};
@@ -270,6 +298,7 @@ const TrackSeparation = () => {
   };
 
   const confirmSwitchMode = () => {
+    cleanup(); // Очистка при подтверждении переключения
     setTracks([]);
     Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
     wavesurferRefs.current = {};

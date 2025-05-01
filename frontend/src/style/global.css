@@ -115,3 +115,55 @@
     transform: scale(1.05);
   }
   
+
+  /* Бегущая строка */
+.marquee-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8); /* Полупрозрачный чёрный фон */
+  overflow: hidden;
+  z-index: 1000; /* Поверх остального контента */
+  padding: 10px 0;
+}
+
+.marquee {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 16px;
+  animation: marquee 20s linear infinite; /* Движение текста за 20 секунд */
+}
+
+.marquee-text {
+  background: var(--neon-green); /* Неоновый градиент: розовый → голубой */
+  -webkit-background-clip: text;
+  background-clip: text; /* Стандартное свойство для совместимости */
+  -webkit-text-fill-color: transparent;
+}
+
+.marquee-link {
+  color: #ff00ff; /* Ярко-розовый для ссылки */
+  text-decoration: underline;
+}
+
+.marquee-link:hover {
+  color: #00ffff; /* Голубой при наведении */
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%); /* Начинается за правой границей */
+  }
+  100% {
+    transform: translateX(-100%); /* Уходит за левую границу */
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .marquee {
+    font-size: 12px; /* Меньший шрифт на мобильных */
+  }
+}

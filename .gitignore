@@ -1,5 +1,39 @@
-env/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.egg-info/
+*.egg
+dist/
+build/
+*.sqlite3
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+frontend/build/
+
+# Docker
 *.log
+*.pid
+*.sock
+
+# Sensitive
+.env
+secrets/
+*.key
+*.pem
+
+# Project-specific
+track_separation/Uploads/
+track_separation/output/
+track_separation/media/
+track_separation/staticfiles/
+
+# macOS
 .DS_Store
