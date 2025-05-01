@@ -1,51 +1,45 @@
-# Stage 1: Builder
-FROM python:3.11-slim AS builder
+# Базовый образ
+FROM python:3.9.19-slim AS builder
 
-# Установка зависимостей для FFmpeg
+# Установка зависимостей ОС
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
+    build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Установка рабочей директории
+# Рабочая директория
 WORKDIR /app
 
-# Установка переменных окружения
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Копирование и установка зависимостей
+# Копирование requirements.txt
 COPY requirements.txt .
+
+# Установка Python-зависимостей
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Stage 2: Production
-FROM python:3.11-slim
+# Финальный образ
+FROM python:3.9.19-slim
 
-# Установка FFmpeg
+# Установка минимальных зависимостей
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
+    libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Создание пользователя без root-прав
+# Создание пользователя
 RUN useradd -m -r appuser && \
-    mkdir -p /app /app/staticfiles /app/media /app/Uploads /app/output && \
+    mkdir -p /app /app/static /app/media && \
     chown -R appuser:appuser /app
 
 # Копирование зависимостей из builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Установка рабочей директории
+# Копирование кода
+COPY . /app
+
+# Настройка рабочей директории и пользователя
 WORKDIR /app
-
-# Копирование кода приложения
-COPY --chown=appuser:appuser . .
-
-# Переключение на пользователя без root-прав
 USER appuser
 
-# Открытие порта
-EXPOSE 8000
-
-# Запуск Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "track_separation.wsgi:application"]
+# Команда запуска
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "track_separation.wsgi:application"]

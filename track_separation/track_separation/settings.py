@@ -48,7 +48,7 @@ CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': 'redis://redis:6379/0',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -59,7 +59,7 @@ CACHES = {
 from django.core.cache import cache # type: ignore
 
 # Сохранить данные
-cache.set('audio_key', 'audio_file_path', timeout=3600)
+# cache.set('audio_key', 'audio_file_path', timeout=3600)
 
 # Получить данные
 audio_path = cache.get('audio_key')

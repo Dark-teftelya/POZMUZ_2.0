@@ -18,7 +18,7 @@ const App = () => {
 
   // Управление видимостью бегущей строки
   useEffect(() => {
-    const showDuration = 120 * 1000; // 2 минуты
+    const showDuration = 60 * 1000; // 2 минуты
     const cycleDuration = 300 * 1000; // 5 минут
 
     const toggleMarquee = () => {
