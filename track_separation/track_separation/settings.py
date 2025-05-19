@@ -39,7 +39,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.1.100:3000",
     "http://192.168.1.101:3000",
     "http://192.168.1.102:3000",
-    "http://172.20.10.2:3000"
+    "http://172.20.10.2:3000",
+    "http://176.57.213.254:3000"
 ]
 
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
@@ -48,7 +49,7 @@ CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis:6379/0',
+        'LOCATION': 'redis://localhost:6379/0',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -121,19 +122,27 @@ WSGI_APPLICATION = 'track_separation.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'pozmuz',   # Имя вашей базы данных
+#        'USER': 'Roman',     # Ваш пользователь Postgres
+#        'PASSWORD': ' ',  # Пароль для пользователя
+#        'HOST': 'localhost',
+#        'PORT': '5432',
+#        'OPTIONS': {
+#            'options': '-c timezone=UTC'
+#        },
+#    }
+#}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pozmuz',   # Имя вашей базы данных
-        'USER': 'Roman',     # Ваш пользователь Postgres
-        'PASSWORD': ' ',  # Пароль для пользователя
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'OPTIONS': {
-            'options': '-c timezone=UTC'
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
