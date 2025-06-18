@@ -11,9 +11,9 @@ import sec_last from '../assets/fast.jpg';
 import sec_last2 from '../assets/higth_mus.jpg';
 import sec_last3 from '../assets/mus_set.png';
 // Импортируем видео (замените пути на реальные файлы)
-import trackSeparationVideo from '../assets/video/sep.webm';
-import equalizerVideo from '../assets/video/equal.webm';
-import mixingVideo from '../assets/video/mix.webm';
+import trackSeparationVideo from '../assets/video/sep.mov';
+import equalizerVideo from '../assets/video/equal.mov';
+import mixingVideo from '../assets/video/mix.mov';
 
 const Homepage = () => {
   const handleBoxClick = (event) => {
@@ -187,7 +187,7 @@ const Homepage = () => {
               <a href="https://t.me/PozMUZZ" target="_blank" rel="noopener noreferrer" className="social-link">
                 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram" className="social-icon" />
               </a>
-              <a href="https://vk.com/pozmuz" target="_blank" rel="noopener noreferrer" className="social-link">
+              <a href="https://vk.com" target="_blank" rel="noopener noreferrer" className="social-link">
                 <img src="https://cdn-icons-png.flaticon.com/512/145/145813.png" alt="VK" className="social-icon" />
               </a>
             </div>
