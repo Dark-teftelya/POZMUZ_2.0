@@ -11,9 +11,9 @@ import sec_last from '../assets/fast.jpg';
 import sec_last2 from '../assets/higth_mus.jpg';
 import sec_last3 from '../assets/mus_set.png';
 // Импортируем видео (замените пути на реальные файлы)
-import trackSeparationVideo from '../assets/video/sep.mov';
-import equalizerVideo from '../assets/video/equal.mov';
-import mixingVideo from '../assets/video/mix.mov';
+import trackSeparationVideo from '../assets/video/sep.webm';
+import equalizerVideo from '../assets/video/equal.webm';
+import mixingVideo from '../assets/video/mix.webm';
 
 const Homepage = () => {
   const handleBoxClick = (event) => {
