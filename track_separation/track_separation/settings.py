@@ -27,7 +27,7 @@ SECRET_KEY = '%2r$8@0pm&=y&7xi-_x=%+-_8h$mai2)!5v*2@(-=jv%nu0f4a'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.100", "localhost", "*"] #РАЗКОМЕНТИРУЙ ПОСЛЕ РАЗРАБОТКИ
+ALLOWED_HOSTS = ["pozmuz.ru", "www.pozmuz.ru ", "176.57.213.254", "localhost", "*"] #РАЗКОМЕНТИРУЙ ПОСЛЕ РАЗРАБОТКИ
 
 CORS_ORIGIN_ALLOW_ALL = True  # Включите это для разработки, но установите конкретные домены для продакшена
 
@@ -35,13 +35,12 @@ CORS_ORIGIN_ALLOW_ALL = True  # Включите это для разработ�
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    "http://192.168.1.100:3000",
-    "http://192.168.1.101:3000",
-    "http://192.168.1.102:3000",
-    "http://172.20.10.2:3000",
-    "http://176.57.213.254:3000"
+    "http://pozmuz.ru",
+    "http://www.pozmuz.ru",
+    "http://176.57.213.254:3000",
 ]
+
+SITE_URL = 'http://pozmuz.ru'
 
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 

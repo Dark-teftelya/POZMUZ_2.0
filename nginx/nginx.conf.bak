@@ -11,23 +11,10 @@ http {
     server {
         listen 80;
         server_name pozmuz.ru www.pozmuz.ru;
-        client_max_body_size 100M;  # Для больших файлов
 
         # React-фронтенд (режим разработки)
         location / {
-            proxy_pass http://127.0.0.1:3000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-        }
-
-        # Статические файлы React
-        location /static/ {
-            proxy_pass http://127.0.0.1:3000/static/;
+            proxy_pass http://127.0.0.1:3000;  # Порт npm start
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -36,19 +23,25 @@ http {
 
         # API-запросы к Django
         location /api/ {
-            proxy_pass http://127.0.0.1:8000/api/;
+            proxy_pass http://127.0.0.1:8000;  # Порт runserver
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
+        # Статические файлы Django
+        location /static/ {
+            alias /home/root/POZMUZ_2.0/track_separation/static/;
+        }
+
         # Медиа-файлы Django
         location /media/ {
-            alias /root/POZMUZ_2.0/track_separation/media/;
+            alias /home/root/POZMUZ_2.0/track_separation/media/;
         }
     }
 
+    # Редирект с IP
     server {
         listen 80;
         server_name 176.57.213.254;
