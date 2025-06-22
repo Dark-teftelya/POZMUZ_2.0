@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../style/home.css';
 import myImage from '../assets/Headphones.gif';
@@ -11,9 +11,12 @@ import sec_last from '../assets/fast.jpg';
 import sec_last2 from '../assets/higth_mus.jpg';
 import sec_last3 from '../assets/mus_set.png';
 // Импортируем видео (замените пути на реальные файлы)
-import trackSeparationVideo from '../assets/video/sep.webm';
-import equalizerVideo from '../assets/video/equal.webm';
-import mixingVideo from '../assets/video/mix.webm';
+import trackSeparationVideoW from '../assets/video/sep.webm';
+import equalizerVideoW from '../assets/video/equal.webm';
+import mixingVideoW from '../assets/video/mix.webm';
+import trackSeparationVideoM from '../assets/video/sep.mov';
+import equalizerVideoM from '../assets/video/equal.mov';
+import mixingVideoM from '../assets/video/mix.mov';
 
 const Homepage = () => {
   const handleBoxClick = (event) => {
@@ -21,13 +24,80 @@ const Homepage = () => {
     box.classList.toggle('zoomed');
   };
 
+  const isSafari = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    return userAgent.includes('safari') && !userAgent.includes('chrome') && !userAgent.includes('crios');
+  };
+
+  const getVideoSource = (webmSrc, movSrc) => {
+    return isSafari() ? movSrc : webmSrc;
+  };
+
+  // Состояние для управления мини-блоком, степпером, анимацией и активацией
+  const [isMiniBlockVisible, setIsMiniBlockVisible] = useState(true);
+  const [step, setStep] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isStepperActivated, setIsStepperActivated] = useState(false); // Новый флаг
+
+  // Список секций для степпера
+  const sections = [
+    { id: 'extra-section', hint: 'Что вы получите с POZMUZ? Этот блок показывает преимущества нашего сервиса.' },
+    { id: 'features-section', hint: 'Здесь вы найдете ключевые функции: разделение треков, эквалайзер и сведение.' },
+    { id: 'get-started-section', hint: 'Начните работу с функциями, нажав на одну из иконок для перехода!' },
+  ];
+
+  // Эффект для прокрутки к секции и отображения подсказки только при активации
+  useEffect(() => {
+    if (isStepperActivated && step < sections.length && isMiniBlockVisible) {
+      const section = document.getElementById(sections[step].id);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setShowPopup(true);
+        const timer = setTimeout(() => setShowPopup(false), 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [step, isStepperActivated, isMiniBlockVisible]);
+
+  // Обработчик клика по кнопке "Вперед" с активацией степпера
+  const handleNextStep = () => {
+    if (!isStepperActivated) {
+      setIsStepperActivated(true); // Активируем степпер при первом нажатии
+    }
+    if (step < sections.length - 1) {
+      setStep(step + 1);
+    } else {
+      setStep(0); // Циклический возврат к началу
+    }
+  };
+
+  // Обработчик закрытия мини-блока с анимацией
+  const handleCloseMiniBlock = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setIsMiniBlockVisible(false);
+      setIsAnimating(false);
+    }, 500); // Длительность анимации
+  };
+
+  // Обработчик активации степпера через вопросик с анимацией
+  const handleReactivateStepper = () => {
+    setIsAnimating(false);
+    setIsMiniBlockVisible(true);
+    setStep(0);
+    if (!isStepperActivated) {
+      setIsStepperActivated(true); // Активируем при первом открытии через вопросик
+    }
+  };
+
   return (
     <div className="homepage-container">
       {/* Шапка */}
-      <section className="hero-section">
+      <section id="hero-section" className="hero-section">
         <div className="hero-text">
           <h1>Добро пожаловать на POZMUZ</h1>
-          <p>Откройте для себя возможности искусственного интеллекта в редактировании музыки</p>
+          <p>Откройте для себя возможности в редактировании музыки на нашем сервисе</p>
         </div>
         <div className="hero-image-container">
           <img src={pilImage} alt="Hero" className="image" />
@@ -35,7 +105,7 @@ const Homepage = () => {
       </section>
 
       {/* Блок "Ключевые функции" */}
-      <section className="features-section">
+      <section id="features-section" className="features-section">
         <div className="features-image-container">
           <img src={pikImage} alt="Features" className="image2" />
           <h2 className="features-title">Ключевые функции</h2>
@@ -51,7 +121,7 @@ const Homepage = () => {
                 playsInline
                 preload="metadata"
               >
-                <source src={trackSeparationVideo} type="video/mp4" />
+                <source src={getVideoSource(trackSeparationVideoW, trackSeparationVideoM)} type={isSafari() ? 'video/quicktime' : 'video/webm'} />
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -75,7 +145,7 @@ const Homepage = () => {
                 playsInline
                 preload="metadata"
               >
-                <source src={equalizerVideo} type="video/mp4" />
+                <source src={getVideoSource(equalizerVideoW, equalizerVideoM)} type={isSafari() ? 'video/quicktime' : 'video/webm'} />
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -99,7 +169,7 @@ const Homepage = () => {
                 playsInline
                 preload="metadata"
               >
-                <source src={mixingVideo} type="video/mp4" />
+                <source src={getVideoSource(mixingVideoW, mixingVideoM)} type={isSafari() ? 'video/quicktime' : 'video/webm'} />
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -114,10 +184,15 @@ const Homepage = () => {
             </div>
           </div>
         </div>
+        {isMiniBlockVisible && step === 1 && (
+          <div className="hint-overlay">
+            <div className="hint-content">{sections[1].hint}</div>
+          </div>
+        )}
       </section>
 
       {/* Блок "Get Started" */}
-      <section className="get-started-section">
+      <section id="get-started-section" className="get-started-section">
         <div className="get-started-image-container">
           <div className="get-started-text">
             <h2 className="get-started-title">Давай перейдем к функциям сервиса!</h2>
@@ -155,9 +230,14 @@ const Homepage = () => {
             </div>
           </div>
         </div>
+        {isMiniBlockVisible && step === 2 && (
+          <div className="hint-overlay">
+            <div className="hint-content">{sections[2].hint}</div>
+          </div>
+        )}
       </section>
 
-      <section className="extra-section">
+      <section id="extra-section" className="extra-section">
         <h2 className="section-title">Что вы получите с POZMUZ?</h2>
         <div className="feature-cards">
           <div className="feature-card">
@@ -176,6 +256,11 @@ const Homepage = () => {
             <p>Простота использования</p>
           </div>
         </div>
+        {isMiniBlockVisible && step === 0 && (
+          <div className="hint-overlay">
+            <div className="hint-content">{sections[0].hint}</div>
+          </div>
+        )}
       </section>
 
       <footer className="footer-section">
@@ -200,6 +285,56 @@ const Homepage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Мини-блок в правом нижнем углу */}
+      {isMiniBlockVisible && (
+        <div className={`mini-block ${isAnimating ? 'slide-out' : 'slide-in'}`}>
+          <button className="close-button" onClick={handleCloseMiniBlock}>
+            ×
+          </button>
+          <p>Хочешь познакомиться с нашим сервисом? Жми вперед!</p>
+          <div className="progress-dots">
+            {sections.map((_, index) => (
+              <span
+                key={index}
+                className={`dot ${step === index ? 'active' : ''}`}
+                onClick={() => {
+                  if (!isStepperActivated) setIsStepperActivated(true);
+                  setStep(index);
+                }}
+              ></span>
+            ))}
+          </div>
+          <button className="next-button" onClick={handleNextStep}>
+            Вперед
+          </button>
+        </div>
+      )}
+
+      {/* Вопросик после закрытия */}
+      {!isMiniBlockVisible && (
+        <div className="reactivate-button" onClick={handleReactivateStepper}>
+          ?
+        </div>
+      )}
+
+      {/* Поп-ап с текстом при переходе */}
+      {showPopup && isMiniBlockVisible && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            {step === 0 && <p>Этот блок показывает, какие преимущества вы получите: быстрая обработка, высокое качество и удобный интерфейс!</p>}
+            {step === 1 && <p>Здесь вы можете увидеть видео и описание функций: разделение треков, настройка эквалайзера и сведение миксов.</p>}
+            {step === 2 && <p>Нажмите на иконки, чтобы перейти к функциям и начать работу с загрузкой треков или их обработкой!</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Оверлей подсказки */}
+      {isMiniBlockVisible && step < sections.length && isStepperActivated && (
+        <div className="hint-overlay">
+          <div className="hint-content">{sections[step].hint}</div>
+        </div>
+      )}
     </div>
   );
 };
