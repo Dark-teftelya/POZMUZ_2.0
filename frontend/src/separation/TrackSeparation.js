@@ -210,7 +210,7 @@ const TrackSeparation = () => {
         });
         const filePath = track.filename.includes('generated')
           ? `${API_BASE_URL}/media/${track.filename}`
-          : `${API_BASE_URL}/output/${track.filename}`;
+          : `${API_BASE_URL}/output/${track.filename.replace('.mp3', '.wav')}`;
         console.log(`Инициализация WaveSurfer для ${track.name}: ${filePath}`);
         wavesurfer.load(filePath);
 

@@ -36,4 +36,6 @@ track_separation/media/
 track_separation/staticfiles/
 
 # macOS
-.DS_Store
+.DS_Store*.save
+*.bak
+track_separation/gunicorn.out
