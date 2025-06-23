@@ -5,7 +5,7 @@ import myImage from '../assets/Headphones.gif';
 import myImage2 from '../assets/Music note.gif';
 import myImage3 from '../assets/Vinyl record.gif';
 import pilImage from '../assets/plast.jpeg';
-import pikImage from '../assets/kolonka.jpg';
+import pikImage from '../assets/6738.jpg';
 import pikImage2 from '../assets/8914574.jpg';
 import sec_last from '../assets/fast.jpg';
 import sec_last2 from '../assets/higth_mus.jpg';

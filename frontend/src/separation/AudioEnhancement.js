@@ -2,6 +2,37 @@ import React, { useState, useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
 import "../style/MixTrack.css";
 import { API_BASE_URL } from "../config";
+import { Modal } from 'react-bootstrap';
+import loadingGif from '../assets/gif_file/cat.gif';
+import saccess from '../assets/gif_file/save.gif'
+
+// Компонент модального окна
+const LoadingModal = ({ show }) => {
+  return (
+    <Modal
+      show={show}
+      centered
+      dialogClassName="loading-modal"
+      backdropClassName="loading-modal-backdrop"
+    >
+      <div className="loading-modal-titlebar">Processing</div>
+      <Modal.Body className="loading-modal-body">
+        <img src={loadingGif} alt="Loading..." className="loading-gif" />
+        <p className="neon-text">ПРОИСХОДИТ AI МАГИЯ</p>
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+// Компонент уведомления
+const Notification = ({ show }) => {
+  return (
+    <div className={`notification ${show ? 'visible' : 'hidden'}`}>
+      <img src={saccess} alt="Success Icon" className="notification-icon" />
+      <p className="notification-text">Success</p>
+    </div>
+  );
+};
 
 // Динамическое подгружение всех MP3 и WAV файлов из /public/media с помощью Webpack require.context
 let localBeats = [];
@@ -31,11 +62,21 @@ const MixTrack = () => {
   const [showLibrary, setShowLibrary] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalPlaying, setModalPlaying] = useState({});
+  const [showNotification, setShowNotification] = useState(false);
   const wavesurferRefs = useRef({});
   const modalWavesurferRefs = useRef({});
   const fileInputRef = useRef(null);
 
   const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
+  useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNotification]);
 
   const sanitizeFileName = (name) => {
     return name
@@ -343,6 +384,7 @@ const MixTrack = () => {
       if (blob.size === 0) throw new Error("Получен пустой файл от сервера");
       console.log("Blob type:", blob.type);
       setMixedAudio(blob);
+      setShowNotification(true);
       console.log("Сведение завершено на сервере");
     } catch (err) {
       setError("Ошибка при сведении: " + err.message);
@@ -378,6 +420,8 @@ const MixTrack = () => {
 
   return (
     <div className="container">
+      <LoadingModal show={loading} />
+      <Notification show={showNotification} />
       <section className="uploadSection">
         <h2>Попробуй свести трек</h2>
         <p>С легкостью упорядочивайте и микшируйте ваши звуковые дорожки</p>
@@ -391,7 +435,6 @@ const MixTrack = () => {
           hidden
           onChange={handleUploadTrack}
         />
-        {loading && <p>Обработка...</p>}
         {error && <p className="error">{error}</p>}
       </section>
 

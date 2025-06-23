@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import WaveSurfer from 'wavesurfer.js';
 import { Modal, Button } from 'react-bootstrap';
@@ -6,7 +6,38 @@ import '../style/trackSeparation.css';
 import icon1 from '../assets/icons_music.png';
 import icon2 from '../assets/icons_gen.png';
 import boostyIcon from '../assets/boosty_icon.png';
+import loadingGif from '../assets/gif_file/cat.gif';
+import saccess from '../assets/gif_file/save.gif';
 import { API_BASE_URL } from '../config';
+
+// Компонент модального окна
+const LoadingModal = ({ show, queueStatus }) => {
+  return (
+    <Modal
+      show={show}
+      centered
+      dialogClassName="loading-modal"
+      backdropClassName="loading-modal-backdrop"
+    >
+      <div className="loading-modal-titlebar">Processing</div>
+      <Modal.Body className="loading-modal-body">
+        <img src={loadingGif} alt="Loading..." className="loading-gif" />
+        <p className="neon-text">
+          {queueStatus === 'queued' ? 'AI МАГИЯ СЕЙЧАС ЗАНЯТА, ПОДОЖДИТЕ...' : 'ПРОИСХОДИТ AI МАГИЯ'}
+        </p>
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+const Notification = ({ show }) => {
+  return (
+    <div className={`notification ${show ? 'visible' : 'hidden'}`}>
+      <img src={saccess} alt="Success Icon" className="notification-icon" />
+      <p className="notification-text">Успешно обработано!</p>
+    </div>
+  );
+};
 
 const CustomRangeSlider = ({ trackId, defaultValue, onVolumeChange }) => {
   const sliderRef = useRef(null);
@@ -17,18 +48,13 @@ const CustomRangeSlider = ({ trackId, defaultValue, onVolumeChange }) => {
       const value = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
       sliderRef.current.value = value;
       onVolumeChange(trackId, value);
-      console.log(`Кастомный ползунок ${trackId}: значение ${value}, clientX: ${clientX}, rect: ${rect.left}-${rect.right}`);
-    } else {
-      console.error(`sliderRef для ${trackId} не найден`);
     }
   };
 
   const handleMouseDown = (e) => {
-    console.log(`MouseDown для ${trackId}`);
     handleMove(e.clientX);
     const moveHandler = (moveEvent) => handleMove(moveEvent.clientX);
     const upHandler = () => {
-      console.log(`MouseUp для ${trackId}`);
       document.removeEventListener('mousemove', moveHandler);
       document.removeEventListener('mouseup', upHandler);
     };
@@ -38,14 +64,9 @@ const CustomRangeSlider = ({ trackId, defaultValue, onVolumeChange }) => {
 
   const handleTouchStart = (e) => {
     e.preventDefault();
-    console.log(`TouchStart для ${trackId}, touches: ${e.touches.length}`);
     handleMove(e.touches[0].clientX);
-    const moveHandler = (moveEvent) => {
-      console.log(`TouchMove для ${trackId}`);
-      handleMove(moveEvent.touches[0].clientX);
-    };
+    const moveHandler = (moveEvent) => handleMove(moveEvent.touches[0].clientX);
     const endHandler = () => {
-      console.log(`TouchEnd для ${trackId}`);
       document.removeEventListener('touchmove', moveHandler);
       document.removeEventListener('touchend', endHandler);
     };
@@ -81,34 +102,40 @@ const TrackSeparation = () => {
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [nextMode, setNextMode] = useState(null);
+  const [tracksLoading, setTracksLoading] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const wavesurferRefs = useRef({});
-  const [userId] = useState(Math.random().toString(36).substring(2, 15)); // Генерация user_id
+  const [userId] = useState(Math.random().toString(36).substring(2, 15));
 
-  useEffect(() => {
-    console.log('Сгенерирован userId:', userId);
+  const cleanupResources = useCallback(async () => {
+    try {
+      console.log('Очистка временных файлов для userId:', userId);
+      await axios.post(`${API_BASE_URL}/api/cleanup/`, { user_id: userId });
+      console.log('Очистка API завершена');
+    } catch (error) {
+      console.error('Ошибка очистки API:', error.response?.data || error.message);
+    }
+
+    const wavesurfers = Object.values(wavesurferRefs.current);
+    wavesurfers.forEach((wavesurfer) => {
+      if (wavesurfer && typeof wavesurfer.destroy === 'function') {
+        try {
+          wavesurfer.destroy();
+          console.log('WaveSurfer уничтожен');
+        } catch (err) {
+          console.error('Ошибка при уничтожении WaveSurfer:', err);
+        }
+      }
+    });
+    wavesurferRefs.current = {};
   }, [userId]);
 
-  // Функция очистки временных файлов
-  const cleanup = async () => {
-    console.log('Очистка временных файлов для userId:', userId);
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/cleanup/`, { user_id: userId });
-      console.log('Очистка завершена:', response.data);
-    } catch (error) {
-      console.error('Ошибка очистки:', error.response?.data || error.message);
-      
-    }
-  };
-
-  // Очистка при размонтировании компонента
   useEffect(() => {
     return () => {
-      console.log('Размонтирование TrackSeparation, вызов cleanup');
-      cleanup();
-      Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
-      wavesurferRefs.current = {};
+      console.log('Размонтирование TrackSeparation');
+      cleanupResources();
     };
-  }, []);
+  }, [cleanupResources]);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -116,6 +143,33 @@ const TrackSeparation = () => {
     setTracks([]);
     setIsPlaying({});
     setQueueStatus(null);
+    setTracksLoading(false);
+  };
+
+  const processFile = async (formData) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/separate/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (response.data.tracks && response.data.tracks.length > 0) {
+        setTracks(response.data.tracks);
+        setTracksLoading(true);
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 5000);
+      } else {
+        setError(new Error('Не удалось найти треки в ответе от сервера.'));
+        setTracksLoading(false);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки файла:', error);
+      setError(new Error('Произошла ошибка при обработке файла: ' + error.message));
+      setTracksLoading(false);
+    } finally {
+      setLoading(false);
+      setQueueStatus(null);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -127,7 +181,7 @@ const TrackSeparation = () => {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('user_id', userId); // Добавляем user_id
+    formData.append('user_id', userId);
 
     setLoading(true);
     setError(null);
@@ -135,7 +189,6 @@ const TrackSeparation = () => {
 
     try {
       const queueResponse = await axios.get(`${API_BASE_URL}/api/check-queue/`);
-      console.log('Статус очереди:', queueResponse.data);
       if (queueResponse.data.status === 'busy') {
         const checkQueue = async () => {
           const poll = setInterval(async () => {
@@ -168,36 +221,19 @@ const TrackSeparation = () => {
     }
   };
 
-  const processFile = async (formData) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/separate/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log('Ответ от /api/separate/:', response.data);
-      if (response.data.tracks && response.data.tracks.length > 0) {
-        setTracks(response.data.tracks);
-      } else {
-        setError(new Error('Не удалось найти треки в ответе от сервера.'));
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки файла:', error);
-      setError(new Error('Произошла ошибка при обработке файла: ' + error.message));
-    } finally {
-      setLoading(false);
-      setQueueStatus(null);
-    }
-  };
-
   const handleGenerateSound = () => {
-    setShowGenerateModal(true); // Показываем модальное окно
+    setShowGenerateModal(true);
   };
 
-  useEffect(() => {
-    tracks.forEach((track, index) => {
-      const trackId = `track-${index}`;
-      if (!wavesurferRefs.current[trackId]) {
+  const initializeWaveSurfer = useCallback((track, index) => {
+    const trackId = `track-${index}`;
+    const filePath = track.filename.includes('generated')
+      ? `${API_BASE_URL}/media/${track.filename}`
+      : `${API_BASE_URL}/output/${track.filename.replace('.mp3', '.wav')}`;
+
+    setTimeout(() => {
+      const container = document.querySelector(`#waveform-${trackId}`);
+      if (!wavesurferRefs.current[trackId] && container) {
         const wavesurfer = WaveSurfer.create({
           container: `#waveform-${trackId}`,
           waveColor: 'violet',
@@ -207,44 +243,38 @@ const TrackSeparation = () => {
           height: 80,
           responsive: true,
           interact: true,
+          normalize: true,
         });
-        const filePath = track.filename.includes('generated')
-          ? `${API_BASE_URL}/media/${track.filename}`
-          : `${API_BASE_URL}/output/${track.filename.replace('.mp3', '.wav')}`;
-        console.log(`Инициализация WaveSurfer для ${track.name}: ${filePath}`);
         wavesurfer.load(filePath);
 
         wavesurfer.on('ready', () => {
-          console.log(`${track.name} готов к воспроизведению`);
-          if (wavesurfer.backend && wavesurfer.backend.ac && wavesurfer.backend.ac.state === 'suspended') {
+          if (wavesurfer.backend?.ac?.state === 'suspended') {
             wavesurfer.backend.ac.resume();
           }
         });
-        wavesurfer.on('error', (err) => {
-          console.error(`Ошибка WaveSurfer для ${track.name}:`, err);
-          if (err.message.includes('AudioContext')) {
-            console.warn('Проблема с AudioContext, требуется пользовательское взаимодействие');
-          }
-        });
-        wavesurfer.on('play', () =>
-          setIsPlaying((prev) => ({ ...prev, [trackId]: true }))
-        );
-        wavesurfer.on('pause', () =>
-          setIsPlaying((prev) => ({ ...prev, [trackId]: false }))
-        );
-        wavesurfer.on('finish', () =>
-          setIsPlaying((prev) => ({ ...prev, [trackId]: false }))
-        );
+        wavesurfer.on('play', () => setIsPlaying((prev) => ({ ...prev, [trackId]: true })));
+        wavesurfer.on('pause', () => setIsPlaying((prev) => ({ ...prev, [trackId]: false })));
+        wavesurfer.on('finish', () => setIsPlaying((prev) => ({ ...prev, [trackId]: false })));
 
         wavesurferRefs.current[trackId] = wavesurfer;
       }
-    });
+    }, 0);
+  }, []);
 
-    return () => {
-      Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
-      wavesurferRefs.current = {};
-    };
-  }, [tracks]);
+  useEffect(() => {
+    if (tracks.length > 0 && tracksLoading) {
+      const loadedTracks = new Set();
+      tracks.forEach((track, index) => {
+        if (!wavesurferRefs.current[`track-${index}`]) {
+          initializeWaveSurfer(track, index);
+          loadedTracks.add(`track-${index}`);
+        }
+      });
+      if (loadedTracks.size === tracks.length) {
+        setTracksLoading(false);
+      }
+    }
+  }, [tracks, tracksLoading, initializeWaveSurfer]);
 
   const handlePlayStop = (trackId) => {
     const wavesurfer = wavesurferRefs.current[trackId];
@@ -252,65 +282,60 @@ const TrackSeparation = () => {
       if (isPlaying[trackId]) {
         wavesurfer.stop();
       } else {
-        wavesurfer.play();
+        wavesurfer.play().catch((err) => {
+          console.error(`Ошибка воспроизведения для ${trackId}:`, err);
+        });
       }
     }
   };
 
-  const handleVolumeChange = (trackId, value) => {
+  const handleVolumeChange = useCallback((trackId, value) => {
     const wavesurfer = wavesurferRefs.current[trackId];
     if (wavesurfer) {
       const volume = parseFloat(value) / 100;
-      console.log(`Установка громкости для ${trackId}: ${volume}`);
       wavesurfer.setVolume(volume);
-      console.log(`Текущая громкость ${trackId}: ${wavesurfer.getVolume()}`);
-      if (wavesurfer.backend && wavesurfer.backend.ac && wavesurfer.backend.ac.state === 'suspended') {
+      if (wavesurfer.backend?.ac?.state === 'suspended') {
         wavesurfer.backend.ac.resume().then(() => {
           wavesurfer.setVolume(volume);
-          console.log(`Аудио-контекст возобновлён для ${trackId}`);
         });
       }
       if (wavesurfer.isPlaying()) {
         wavesurfer.play();
       }
-    } else {
-      console.error(`WaveSurfer для ${trackId} не найден`);
     }
-  };
+  }, []);
 
   const handleSwitchMode = (newMode) => {
     if (activeMode && (tracks.length > 0 || error || file)) {
       setNextMode(newMode);
       setShowSwitchModal(true);
     } else {
-      cleanup(); // Очистка при прямом переключении
+      cleanupResources();
       setTracks([]);
-      Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
-      wavesurferRefs.current = {};
       setIsPlaying({});
       setQueueStatus(null);
-      if (newMode === 'separation' && error && error.message.includes('сгенерировать')) {
+      if (newMode === 'separation' && error?.message.includes('сгенерировать')) {
         setError(null);
       }
       setFile(null);
       setActiveMode(newMode);
+      setTracksLoading(false);
     }
   };
 
   const confirmSwitchMode = () => {
-    cleanup(); // Очистка при подтверждении переключения
+    cleanupResources();
     setTracks([]);
-    Object.values(wavesurferRefs.current).forEach((wavesurfer) => wavesurfer.destroy());
-    wavesurferRefs.current = {};
     setIsPlaying({});
     setQueueStatus(null);
-    if (nextMode === 'separation' && error && error.message.includes('сгенерировать')) {
+    if (nextMode === 'separation' && error?.message.includes('сгенерировать')) {
       setError(null);
     }
     setFile(null);
     setActiveMode(nextMode);
     setShowSwitchModal(false);
     setNextMode(null);
+    setTracksLoading(false);
   };
 
   const cancelSwitchMode = () => {
@@ -324,7 +349,9 @@ const TrackSeparation = () => {
 
   return (
     <div className="container">
-      {/* Модальное окно для переключения режимов */}
+      <LoadingModal show={loading || (tracks.length > 0 && tracksLoading)} queueStatus={queueStatus} />
+      <Notification show={showNotification} />
+
       <Modal
         show={showSwitchModal}
         onHide={cancelSwitchMode}
@@ -350,7 +377,6 @@ const TrackSeparation = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Модальное окно для генерации */}
       <Modal
         show={showGenerateModal}
         onHide={closeGenerateModal}
@@ -419,12 +445,6 @@ const TrackSeparation = () => {
           >
             Перейти к генерации
           </button>
-          {loading && queueStatus === 'queued' && (
-            <p className="loading">Подождите, вы в очереди...</p>
-          )}
-          {loading && queueStatus === 'processing' && (
-            <p className="loading">Идет обработка...</p>
-          )}
           {error && <p className="error">{error.message}</p>}
         </section>
       )}
@@ -442,69 +462,72 @@ const TrackSeparation = () => {
           >
             Перейти к разделению
           </button>
-          {loading && <p className="loading">Идет обработка...</p>}
           {error && <p className="error">{error.message}</p>}
         </section>
       )}
 
-      <section className={`librarySection ${tracks.length > 0 ? 'visible' : 'hidden'}`}>
-        <h2>{activeMode === 'separation' ? 'Обработанные треки' : 'Сгенерированные звуки'}</h2>
-        <p>Прослушайте и настройте треки</p>
-        {tracks.length === 0 && !loading ? (
-          <p>Треки не найдены</p>
-        ) : (
-          tracks.map((track, index) => {
-            const trackId = `track-${index}`;
-            const filePath = track.filename.includes('generated')
-              ? `${API_BASE_URL}/media/${track.filename}`
-              : `${API_BASE_URL}/output/${track.filename}`;
-            return (
-              <div key={index} className="trackItem">
-                <h4>{track.name}</h4>
-                <div id={`waveform-${trackId}`} className="waveform"></div>
-                <div className="trackControls">
-                  <button
-                    onClick={() => handlePlayStop(trackId)}
-                    className="playButton"
-                  >
-                    {isPlaying[trackId] ? '■' : '▶'}
-                  </button>
-                  <label htmlFor={`volume-${trackId}`}>Громкость:</label>
-                  <CustomRangeSlider
-                    trackId={trackId}
-                    defaultValue="50"
-                    onVolumeChange={handleVolumeChange}
-                  />
-                  <a
-                    href={filePath}
-                    download={`${track.name}.wav`}
-                    className="saveButton"
-                    title="Сохранить трек"
-                    onClick={(e) => {
-                      console.log(`Попытка скачать: ${filePath}`);
-                      fetch(filePath)
-                        .then((res) => {
-                          if (!res.ok) {
+      {activeMode && (
+        <section className={`librarySection ${tracks.length > 0 ? 'visible' : 'hidden'}`}>
+          <h2>{activeMode === 'separation' ? 'Обработанные треки' : 'Сгенерированные звуки'}</h2>
+          <p>Прослушайте и настройте треки</p>
+          {tracks.length === 0 && !loading && !tracksLoading ? (
+            <p>Треки не найдены</p>
+          ) : (
+            tracks.length > 0 &&
+            tracks.map((track, index) => {
+              const trackId = `track-${index}`;
+              const filePath = track.filename.includes('generated')
+                ? `${API_BASE_URL}/media/${track.filename}`
+                : `${API_BASE_URL}/output/${track.filename.replace('.mp3', '.wav')}`;
+              return (
+                <div
+                  key={trackId}
+                  className={`trackItem ${tracksLoading ? 'hidden' : 'visible'}`}
+                >
+                  <h4>{track.name}</h4>
+                  <div id={`waveform-${trackId}`} className="waveform"></div>
+                  <div className="trackControls">
+                    <button
+                      onClick={() => handlePlayStop(trackId)}
+                      className="playButton"
+                      disabled={tracksLoading}
+                    >
+                      {isPlaying[trackId] ? '■' : '▶'}
+                    </button>
+                    <label htmlFor={`volume-${trackId}`}>Громкость:</label>
+                    <CustomRangeSlider
+                      trackId={trackId}
+                      defaultValue="50"
+                      onVolumeChange={handleVolumeChange}
+                    />
+                    <a
+                      href={filePath}
+                      download={`${track.name}.wav`}
+                      className="saveButton"
+                      title="Сохранить трек"
+                      onClick={(e) => {
+                        fetch(filePath)
+                          .then((res) => {
+                            if (!res.ok) {
+                              e.preventDefault();
+                              alert('Не удалось скачать трек');
+                            }
+                          })
+                          .catch((err) => {
                             e.preventDefault();
-                            console.error(`Ошибка загрузки ${filePath}: ${res.status}`);
-                            alert('Не удалось скачать трек');
-                          }
-                        })
-                        .catch((err) => {
-                          e.preventDefault();
-                          console.error(`Ошибка fetch ${filePath}:`, err);
-                          alert('Ошибка при скачивании трека');
-                        });
-                    }}
-                  >
-                    Сохранить
-                  </a>
+                            alert('Ошибка при скачивании трека');
+                          });
+                      }}
+                    >
+                      Сохранить
+                    </a>
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
-      </section>
+              );
+            })
+          )}
+        </section>
+      )}
 
       <section className="featuresSection">
         <h2>Возможности</h2>

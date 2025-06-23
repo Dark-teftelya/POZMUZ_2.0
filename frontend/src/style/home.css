@@ -138,7 +138,7 @@ body {
 
 /* Шапка с приветствием */
 .hero-section {
-    width: 100%;
+    width: 60%;
     background: linear-gradient(135deg, rgba(196, 51, 123, 0.9), rgba(129, 76, 203, 0.9));
     display: flex;
     align-items: center;
@@ -190,7 +190,7 @@ body {
 
 /* Блок "Ключевые функции" */
 .features-section {
-    width: 100%;
+    width: 60%;
     background: linear-gradient(135deg, rgba(78, 190, 188, 0.9), rgba(129, 76, 203, 0.9));
     padding: 60px;
     display: flex;
@@ -227,7 +227,7 @@ body {
 
 .features-title {
     font-family: 'Press Start 2P', cursive;
-    font-size: clamp(18px, 3.5vw, 24px); /* Компактный шрифт */
+    font-size: clamp(24px, 3.5vw, 24px); /* Компактный шрифт */
     color: var(--white);
     text-shadow: 0 0 10px var(--neon-green); /* Лёгкая тень */
     white-space: nowrap; /* Текст не переносится */
@@ -373,7 +373,7 @@ body {
 
 .feature-description p {
     color: var(--gray-light);
-    font-size: 16px;
+    font-size: 22px;
     line-height: 1.5;
 }
 
@@ -484,7 +484,7 @@ body {
 
 /* Блок "Get Started" */
 .get-started-section {
-    width: 100%;
+    width: 60%;
     background: linear-gradient(135deg, rgba(196, 51, 123, 0.9), rgba(80, 40, 160, 0.9));
     padding: 60px;
     text-align: center;
@@ -518,7 +518,7 @@ body {
 }
 
 .get-started-text p {
-    font-size: clamp(16px, 2.5vw, 20px);
+    font-size: clamp(24px, 2.5vw, 20px);
     color: var(--gray-light);
 }
 
@@ -572,20 +572,20 @@ body {
 
 .text-container h3, .text-container-w h3 {
     font-family: 'Press Start 2P', cursive;
-    font-size: 20px;
+    font-size: 24px;
     color: var(--white);
     text-shadow: 2px 2px 8px var(--neon-green);
     margin-bottom: 10px;
 }
 
 .text-container p, .text-container-w p {
-    font-size: 16px;
+    font-size: 22px;
     color: var(--gray-light);
 }
 
 /* Экстра секция */
 .extra-section {
-    width: 100%;
+    width: 60%;
     background: linear-gradient(135deg, rgba(129, 76, 203, 0.9), rgba(80, 40, 160, 0.9));
     padding: 60px;
     text-align: center;
@@ -709,7 +709,7 @@ body {
 
 /* Футер */
 .footer-section {
-    width: 100%;
+    width: 80%;
     background: rgba(123, 59, 234, 0.6);
     padding: 40px 60px;
     text-align: center;
@@ -719,7 +719,7 @@ body {
 
 .footer-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     width: 100%;
     max-width: none;
@@ -735,6 +735,7 @@ body {
     text-shadow: 0 0 5px var(--neon-green);
     flex: 1;
     margin: 10px;
+    text-align: center;
 }
 
 .social-block, .support-block {
@@ -1118,8 +1119,8 @@ body {
 /* Стили для мини-блока */
 .mini-block {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 30px;
+    right: 35px;
     background-color: rgba(0, 0, 0, 0.8);
     color: #00ffcc;
     padding: 16.5px; /* +10% от 15px */
@@ -1200,13 +1201,13 @@ body {
   /* Стили для реактивации */
   .reactivate-button {
     position: fixed;
-    bottom: 33px;
+    bottom: 40px;
     right: 20px;
     background-color: rgba(0, 0, 0, 0.8);
     color: #00ffcc;
-    width: 33px; /* +10% от 30px */
-    height: 33px; /* +10% от 30px */
-    border-radius: 16.5px; /* +10% от 15px */
+    width: 53px; /* +10% от 30px */
+    height: 53px; /* +10% от 30px */
+    border-radius: 20.5px; /* +10% от 15px */
     display: flex;
     align-items: center;
     justify-content: center;

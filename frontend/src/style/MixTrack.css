@@ -37,14 +37,14 @@
 }
 
 .uploadSection h2, h3 {
-    font-size: clamp(24px, 5vw, 32px);
+    font-size: clamp(26px, 5vw, 32px);
     margin-bottom: 20px;
     color: var(--white);
     text-shadow: 0 0 10px #39ff14;
 }
 
 .uploadSection p {
-    font-size: clamp(14px, 3vw, 18px);
+    font-size: clamp(22px, 3vw, 18px);
     margin-bottom: 30px;
     color: var(--white);
     opacity: 0.9;
@@ -52,7 +52,7 @@
 
 .neonButton {
     background-color: var(--neon-blue);
-    color: var(--white);
+    color: var(--black);
     padding: 12px 25px;
     border-radius: 8px;
     font-size: clamp(16px, 2.5vw, 20px);
@@ -119,7 +119,7 @@
 }
 
 .librarySection p, .featuresSection p {
-    font-size: clamp(14px, 3vw, 18px);
+    font-size: clamp(22px, 3vw, 18px);
     color: var(--white);
     opacity: 0.9;
     margin-bottom: 20px;
@@ -349,7 +349,7 @@
 
 .modalPlayButton {
     background: var(--neon-blue);
-    color: var(--white);
+    color: var(--black);
     padding: 6px 10px;
     border-radius: 5px;
     border: none;
@@ -486,3 +486,115 @@
         height: 50px;
     }
 }
+
+/* Windows 98/XP style for the modal backdrop */
+.loading-modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 1040; /* Ensure backdrop is behind modal */
+}
+
+
+/* Title bar styling with purple gradient */
+.loading-modal-titlebar {
+    background: linear-gradient(to right, #800080, #b266b2); /* Purple gradient */
+    color: #c0c0c0;
+    font-family: "MS Sans Serif", Geneva, sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-bottom: 2px solid #000000; /* Black bottom for 3D effect */
+    border-right: 2px solid #000000; /* Black right for 3D effect */
+    text-align: left;
+    width: 140%;
+    box-sizing: border-box;
+    margin-top: 0px;
+
+}
+
+/* Modal body styling */
+.loading-modal-body {
+    height:450px;
+    width: 700px;
+    background-color: #c0c0c0; /* Match dialog background */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #808080; /* Inner gray border */
+    border-top-color: #000000; /* Black top for inset effect */
+    border-left-color: #000000; /* Black left for inset effect */
+}
+
+/* Loading GIF styling */
+.loading-gif {
+    width: 200px; 
+    height: 200px;
+    image-rendering: pixelated; 
+    margin-bottom: 10px;
+}
+
+/* Neon text styling with turquoise intermittent neon effect */
+.neon-text {
+    font-family: "MS Sans Serif", Geneva, sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    color: #b266b2; /* Turquoise color */
+    text-align: center;
+    text-transform: uppercase; /* Mimic Windows dialog text */
+    margin: 0;
+    text-shadow: 0 0 5px #de43fa, 0 0 10px #df5dff, 0 0 20px #bc4cfd; /* Neon glow */
+    animation: neon-flicker 1.5s infinite alternate; /* Intermittent flicker */
+}
+
+/* Keyframes for intermittent neon flicker */
+@keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        text-shadow: 
+            0 0 5px #00b7eb,
+            0 0 10px #00b7eb,
+            0 0 20px #00b7eb;
+    }
+    20%, 24%, 55% {
+        text-shadow: none;
+    }
+}
+
+/* Стили для уведомления */
+.notification {
+    position: fixed;
+    bottom: 50px;
+    right: -300px; /* Начальная позиция вне экрана */
+    width: 250px;
+    padding: 15px;
+    background: rgba(0, 255, 255, 0.2); /* Полупрозрачный неоновый фон */
+    border: 1px solid #0ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    transition: right 0.5s ease-in-out;
+    backdrop-filter: blur(5px);
+  }
+  
+  .notification.visible {
+    right: 20px; /* Появление слева направо */
+  }
+  
+  .notification.hidden {
+    right: -300px; /* Скрытие обратно */
+  }
+  
+  .notification-icon {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+  }
+  
+  .notification-text {
+    color: #0ff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.6rem;
+    text-shadow: 0 0 5px #0ff;
+  }

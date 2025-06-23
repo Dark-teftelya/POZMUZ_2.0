@@ -39,3 +39,4 @@ track_separation/staticfiles/
 .DS_Store*.save
 *.bak
 track_separation/gunicorn.out
+.DS_Store

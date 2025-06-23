@@ -330,7 +330,7 @@ body {
 
 .t15, .t16, .t17, .t18, .t19 {
     font-family: 'VCR OSD Mono', monospace;
-    font-size: clamp(12px, 2.5vw, 14px);
+    font-size: clamp(16px, 2.5vw, 14px);
     color: var(--white);
     padding: 8px 16px;
     border-radius: 5px;
@@ -419,7 +419,7 @@ body {
 .play, .pause, .stop, .neonButton, .resetButton {
     font-family: 'VCR OSD Mono', monospace;
     background: var(--neon-blue);
-    color: var(--white);
+    color: var(--black);
     padding: 12px 25px;
     border-radius: 8px;
     border: none;

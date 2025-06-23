@@ -680,3 +680,43 @@
         height: 100px;
     }
 }
+
+
+  /* Стили для уведомления */
+.notification {
+    position: fixed;
+    bottom: 50px;
+    right: -300px; /* Начальная позиция вне экрана */
+    width: 250px;
+    padding: 15px;
+    background: rgba(0, 255, 255, 0.2); /* Полупрозрачный неоновый фон */
+    border: 1px solid #0ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    transition: right 0.5s ease-in-out;
+    backdrop-filter: blur(5px);
+  }
+  
+  .notification.visible {
+    right: 20px; /* Появление слева направо */
+  }
+  
+  .notification.hidden {
+    right: -300px; /* Скрытие обратно */
+  }
+  
+  .notification-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+  }
+  
+  .notification-text {
+    color: #0ff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.2rem;
+    text-shadow: 0 0 5px #0ff;
+  }
