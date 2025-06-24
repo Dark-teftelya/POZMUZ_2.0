@@ -392,6 +392,7 @@ body {
     .features-section {
         padding: 30px 20px;
         margin-bottom: 30px;
+        width: 550px;
     }
 
     .features-image-container {
@@ -792,6 +793,7 @@ body {
         margin-bottom: 30px;
         text-align: center;
         gap: 20px;
+        width: 550px;
     }
 
     .hero-text {
@@ -823,6 +825,13 @@ body {
     .get-started-section {
         padding: 30px 20px;
         margin-bottom: 30px;
+        width: 550px;
+
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center
     }
 
     .get-started-image-container {
@@ -887,6 +896,7 @@ body {
     .extra-section {
         padding: 30px 20px;
         margin-bottom: 30px;
+        width: 550px;
     }
 
     .section-title {
