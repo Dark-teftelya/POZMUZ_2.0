@@ -1,0 +1,16 @@
+[0;1;31m×[0m gunicorn_pozmuz.service - Gunicorn instance to serve POZMUZ_2.0
+     Loaded: loaded (/etc/systemd/system/gunicorn_pozmuz.service; enabled; vendor preset: enabled)
+     Active: [0;1;31mfailed[0m (Result: exit-code) since Wed 2025-06-25 05:59:10 MSK; 10s ago
+   Main PID: 640328 (code=exited, status=1/FAILURE)
+        CPU: 1.104s
+
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]:   File "/var/www/pozmuz/POZMUZ_2.0/env/lib/python3.9/site-packages/gunicorn/arbiter.py", line 395, in stop
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]:     time.sleep(0.1)
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]:   File "/var/www/pozmuz/POZMUZ_2.0/env/lib/python3.9/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]:     self.reap_workers()
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]:   File "/var/www/pozmuz/POZMUZ_2.0/env/lib/python3.9/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]:     raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+Jun 25 05:59:10 4709959-wq01516 gunicorn[640328]: gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Jun 25 05:59:10 4709959-wq01516 systemd[1]: [0;1;39m[0;1;31m[0;1;39mgunicorn_pozmuz.service: Main process exited, code=exited, status=1/FAILURE[0m
+Jun 25 05:59:10 4709959-wq01516 systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mgunicorn_pozmuz.service: Failed with result 'exit-code'.[0m
+Jun 25 05:59:10 4709959-wq01516 systemd[1]: gunicorn_pozmuz.service: Consumed 1.104s CPU time.

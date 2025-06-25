@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "track_separation.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.track_separation.settings")
 
 application = get_wsgi_application()

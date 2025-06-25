@@ -22,6 +22,8 @@ frontend/build/
 *.log
 *.pid
 *.sock
+# Временные файлы и логи
+nohup.out
 
 # Sensitive
 .env

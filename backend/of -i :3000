@@ -1,0 +1,20 @@
+[0;1;32m●[0m nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Wed 2025-06-25 07:11:27 MSK; 2h 8min ago
+       Docs: man:nginx(8)
+    Process: 641559 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 641560 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+   Main PID: 641561 (nginx)
+      Tasks: 5 (limit: 9443)
+     Memory: 18.3M
+        CPU: 3.934s
+     CGroup: /system.slice/nginx.service
+             ├─641561 "nginx: master process /usr/sbin/nginx -g daemon on; master_process on;"
+             ├─641562 "nginx: worker process" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
+             ├─641563 "nginx: worker process" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
+             ├─641564 "nginx: worker process" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
+             └─641565 "nginx: worker process" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
+
+Jun 25 07:11:27 4709959-wq01516 systemd[1]: nginx.service: Consumed 1.055s CPU time.
+Jun 25 07:11:27 4709959-wq01516 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Jun 25 07:11:27 4709959-wq01516 systemd[1]: Started A high performance web server and a reverse proxy server.
