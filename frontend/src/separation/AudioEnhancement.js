@@ -4,7 +4,8 @@ import "../style/MixTrack.css";
 import { API_BASE_URL } from "../config";
 import { Modal } from 'react-bootstrap';
 import loadingGif from '../assets/gif_file/cat.gif';
-import saccess from '../assets/gif_file/save.gif'
+import saccess from '../assets/gif_file/save.gif';
+import Wave from "../components/Wave"; // Исправленный импорт
 
 // Компонент модального окна
 const LoadingModal = ({ show }) => {
@@ -549,6 +550,13 @@ const MixTrack = () => {
         <p>Используйте встроенные инструменты для воспроизведения, удаления и сведения треков.</p>
         <p>Выбирайте формат итогового файла (MP3 или WAV) и сохраняйте результат на свое устройство.</p>
       </section>
+
+      <Wave
+        wavesurfers={wavesurferRefs.current}
+        isPlaying={isPlaying}
+        modalWavesurfers={modalWavesurferRefs.current}
+        modalPlaying={modalPlaying}
+      />
     </div>
   );
 };

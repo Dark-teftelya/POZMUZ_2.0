@@ -1,0 +1,21 @@
+.wave-visualizer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 300px; /* Уменьшенная высота */
+  background: #1a1a1a;
+  display: none;
+  z-index: 0; /* На уровне фона */
+  box-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff; /* Неоновое свечение */
+}
+
+.wave-visualizer.visible {
+  display: block;
+}
+
+.wave-visualizer-canvas {
+  width: 100%;
+  height: 100%;
+  background: #1a1a1a;
+}
