@@ -5,7 +5,24 @@ import { API_BASE_URL } from "../config";
 import { Modal } from 'react-bootstrap';
 import loadingGif from '../assets/gif_file/cat.gif';
 import saccess from '../assets/gif_file/save.gif';
-import Wave from "../components/Wave"; // Исправленный импорт
+import SpectrumAnalyzer from '../components/Wave';
+
+// Компонент ErrorBoundary
+class ErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(error) {
+    console.error('ErrorBoundary поймал ошибку:', error);
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <p className="error">Ошибка в спектральном анализаторе</p>;
+    }
+    return this.props.children;
+  }
+}
 
 // Компонент модального окна
 const LoadingModal = ({ show }) => {
@@ -35,7 +52,7 @@ const Notification = ({ show }) => {
   );
 };
 
-// Динамическое подгружение всех MP3 и WAV файлов из /public/media с помощью Webpack require.context
+// Динамическое подгружение всех MP3 и WAV файлов из /public/media
 let localBeats = [];
 try {
   const requireContext = require.context('/media', false, /\.(mp3|wav)$/);
@@ -43,7 +60,7 @@ try {
     const name = path.replace('./', '');
     return {
       name,
-      path: requireContext(path), // Прямой URL из Webpack
+      path: requireContext(path),
     };
   });
   console.log('localBeats:', localBeats);
@@ -106,7 +123,6 @@ const MixTrack = () => {
         return;
       }
 
-      // Проверяем заголовки файла
       const reader = new FileReader();
       reader.onload = (e) => {
         const buffer = e.target.result;
@@ -133,7 +149,6 @@ const MixTrack = () => {
           console.log(`Файл подтверждён как ${isWav ? 'WAV' : 'MP3'}`);
           resolve(true);
         } else if (isExtensionValid && !isMimeValid) {
-          // Fallback: доверяем расширению, если MIME неопределён
           console.warn('MIME-тип неопределён, доверяем расширению:', fileExtension);
           resolve(true);
         } else {
@@ -170,6 +185,7 @@ const MixTrack = () => {
       setIsPlaying((prev) => ({ ...prev, [newTrack.id]: false }));
       setShowLibrary(true);
       setError("");
+      console.log('New track added, ID:', newTrack.id);
     } catch (err) {
       setError(err.message);
       console.error('Ошибка валидации файла:', err);
@@ -191,12 +207,13 @@ const MixTrack = () => {
       await validateAudioFile(file);
 
       const sanitizedName = sanitizeFileName(beat.name);
-      const newTrack = { file, id: Date.now(), name: sanitizedName };
+      const newTrack = { file, id: Date.now(), name: sanitizedName, isBeat: true };
       setTracks((prev) => [...prev, newTrack]);
       setIsPlaying((prev) => ({ ...prev, [newTrack.id]: false }));
       setShowLibrary(true);
       setIsModalOpen(false);
       setError("");
+      console.log('New beat added, ID:', newTrack.id);
     } catch (err) {
       setError(err.message);
       console.error('Ошибка добавления бита:', err);
@@ -253,7 +270,16 @@ const MixTrack = () => {
             height: 80,
             responsive: true,
           });
+          console.log('Initializing WaveSurfer for track', track.id);
           wavesurfer.loadBlob(track.file);
+          wavesurfer.on("ready", () => {
+            console.log('WaveSurfer ready for track', track.id);
+            wavesurfer.setVolume(0.5); // Optional: Set default volume
+          });
+          wavesurfer.on("error", (err) => {
+            console.error('WaveSurfer error for track', track.id, err);
+            setError("Ошибка загрузки трека");
+          });
           wavesurfer.on("play", () => setIsPlaying((prev) => ({ ...prev, [track.id]: true })));
           wavesurfer.on("pause", () => setIsPlaying((prev) => ({ ...prev, [track.id]: false })));
           wavesurferRefs.current[track.id] = wavesurfer;
@@ -264,15 +290,34 @@ const MixTrack = () => {
       }
     });
 
-    return () => {
-      Object.values(wavesurferRefs.current).forEach((wavesurfer) => {
+    // Cleanup removed tracks
+    const currentTrackIds = tracks.map((track) => track.id);
+    Object.keys(wavesurferRefs.current).forEach((id) => {
+      if (!currentTrackIds.includes(Number(id))) {
         try {
-          wavesurfer.destroy();
+          if (wavesurferRefs.current[id]) {
+            wavesurferRefs.current[id].destroy();
+            delete wavesurferRefs.current[id];
+            console.log('Cleaned up WaveSurfer instance for removed track', id);
+          }
         } catch (err) {
-          console.error('Ошибка уничтожения WaveSurfer:', err);
+          console.error('Ошибка уничтожения WaveSurfer:', id, err);
+        }
+      }
+    });
+
+    return () => {
+      Object.keys(wavesurferRefs.current).forEach((id) => {
+        try {
+          if (wavesurferRefs.current[id]) {
+            wavesurferRefs.current[id].destroy();
+            delete wavesurferRefs.current[id];
+            console.log('Component unmount: Cleaned up WaveSurfer instance', id);
+          }
+        } catch (err) {
+          console.error('Ошибка уничтожения WaveSurfer при размонтировании:', id, err);
         }
       });
-      wavesurferRefs.current = {};
     };
   }, [tracks]);
 
@@ -305,6 +350,7 @@ const MixTrack = () => {
     if (wavesurferRefs.current[id]) {
       try {
         wavesurferRefs.current[id].playPause();
+        console.log('Play/pause triggered for track', id);
       } catch (err) {
         console.error('Ошибка воспроизведения/паузы:', id, err);
         setError("Ошибка воспроизведения трека");
@@ -341,19 +387,20 @@ const MixTrack = () => {
 
   const handleRemoveTrack = (id) => {
     setTracks((prev) => prev.filter((track) => track.id !== id));
-    if (wavesurferRefs.current[id]) {
-      try {
-        wavesurferRefs.current[id].destroy();
-        delete wavesurferRefs.current[id];
-      } catch (err) {
-        console.error('Ошибка удаления трека:', id, err);
-      }
-    }
     setIsPlaying((prev) => {
       const newState = { ...prev };
       delete newState[id];
       return newState;
     });
+    if (wavesurferRefs.current[id]) {
+      try {
+        wavesurferRefs.current[id].destroy();
+        delete wavesurferRefs.current[id];
+        console.log('Removed WaveSurfer instance for track', id);
+      } catch (err) {
+        console.error('Ошибка удаления WaveSurfer instance:', id, err);
+      }
+    }
     if (tracks.length === 1) setShowLibrary(false);
   };
 
@@ -551,12 +598,13 @@ const MixTrack = () => {
         <p>Выбирайте формат итогового файла (MP3 или WAV) и сохраняйте результат на свое устройство.</p>
       </section>
 
-      <Wave
-        wavesurfers={wavesurferRefs.current}
-        isPlaying={isPlaying}
-        modalWavesurfers={modalWavesurferRefs.current}
-        modalPlaying={modalPlaying}
-      />
+      <ErrorBoundary>
+        <SpectrumAnalyzer
+          tracks={tracks.filter((track) => !track.isBeat)}
+          isPlaying={isPlaying}
+          wavesurferRefs={wavesurferRefs}
+        />
+      </ErrorBoundary>
     </div>
   );
 };

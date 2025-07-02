@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "audiomotion-analyzer": "^3.6.1",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "framer-motion": "^12.19.1",
@@ -19,7 +20,6 @@
     "react-router-dom": "^6.30.0",
     "react-scripts": "^5.0.1",
     "react-swipeable": "^7.0.2",
-    "tailwindcss": "^4.1.10",
     "tone": "^15.0.4",
     "tsparticles": "^3.8.1",
     "wavesurfer.js": "^7.9.4",
@@ -49,6 +49,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "react-app-rewired": "^2.2.1"
+    "react-app-rewired": "^2.2.1",
+    "tailwindcss": "^4.1.11"
   }
 }
