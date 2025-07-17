@@ -4,14 +4,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from spleeter.separator import Separator
+from scipy.io import wavfile
 import os
 import logging
 import tensorflow as tf
-from scipy.io import wavfile
 import numpy as np
 import h5py
 import threading
 import shutil
+import librosa
+import re
 
 # Настройка логирования
 logger = logging.getLogger('audio_processing')
@@ -94,6 +96,7 @@ class TrackSeparationView(APIView):
                 )
             is_processing = True
             logger.debug("Queue locked for processing")
+        file_path = None
         try:
             tf.config.run_functions_eagerly(True)
             user_id = request.data.get('user_id')
@@ -109,39 +112,95 @@ class TrackSeparationView(APIView):
                 logger.error(f"Invalid file type: {file.name}")
                 return Response({'error': 'Invalid file type'}, status=status.HTTP_400_BAD_REQUEST)
             
+            # Ограничение размера файла (10 МБ)
+            if file.size > 10 * 1024 * 1024:
+                logger.error("File too large")
+                return Response({'error': 'File too large. Max size is 10MB'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Очистка имени файла от специальных символов
+            original_filename = file.name
+            safe_filename = re.sub(r'[^\w\-_\. ]', '_', original_filename.split('.')[0]) + '.' + original_filename.split('.')[-1]
+            logger.debug(f"Original filename: {original_filename}, Safe filename: {safe_filename}")
+            
             # Сохраняем файл в директорию с user_id
-            file_path = os.path.join('Uploads', user_id, file.name)
+            file_path = os.path.join('Uploads', user_id, safe_filename)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'wb+') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
             logger.debug(f"File saved to {file_path}")
+            logger.debug(f"File size: {os.path.getsize(file_path)} bytes")
+            
+            # Проверка валидности файла
+            try:
+                librosa.load(file_path, sr=None)
+                logger.debug(f"File {file_path} is valid")
+            except Exception as e:
+                logger.error(f"Invalid audio file: {str(e)}")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return Response({'error': f'Invalid audio file format: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Создаём выходную директорию с user_id
-            output_dir = os.path.join('output', user_id, file.name.split('.')[0])
+            output_dir = os.path.join('output', user_id, safe_filename.split('.')[0])
             os.makedirs(output_dir, exist_ok=True)
             logger.debug(f"Separating file to {output_dir}")
-            separator.separate_to_file(file_path, os.path.dirname(output_dir))
             
+            # Проверка прав доступа
+            logger.debug(f"Checking write permissions for {output_dir}")
+            if not os.access(os.path.dirname(output_dir), os.W_OK):
+                logger.error(f"No write permission for {output_dir}")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return Response({'error': f'No write permission for output directory: {output_dir}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Обработка файла Spleeter
+            try:
+                separator.separate_to_file(file_path, os.path.dirname(output_dir))
+                logger.debug("Spleeter processing completed")
+            except Exception as e:
+                logger.error(f"Spleeter failed to process file: {str(e)}")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return Response({'error': f'Spleeter processing failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Поиск всех .wav файлов в output/<user_id>/ и поддиректориях
             output_file_info = []
-            for root, dirs, files in os.walk(output_dir):
+            user_output_dir = os.path.join('output', user_id)
+            logger.debug(f"Searching for .wav files in {user_output_dir}")
+            for root, dirs, files in os.walk(user_output_dir):
+                logger.debug(f"Walking directory {root}: files found: {files}")
                 for file in files:
                     if file.endswith('.wav'):
                         relative_path = os.path.relpath(os.path.join(root, file), 'output')
                         output_file_info.append({
-                            'name': file.replace('.wav', '').capitalize(),
+                            'name': os.path.splitext(file)[0].capitalize(),
                             'filename': relative_path
                         })
-            logger.debug(f"Output files: {output_file_info}")
-            os.remove(file_path)
+            logger.debug(f"Output files found: {output_file_info}")
+            
+            # Проверка наличия треков
+            if not output_file_info:
+                logger.error(f"No .wav files found in {user_output_dir}")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return Response({'error': 'No tracks generated by Spleeter. Check file format or server logs.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Удаление входного файла после успешной обработки
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                logger.debug(f"Input file {file_path} removed")
+            
             return JsonResponse({'tracks': output_file_info})
         except Exception as e:
             logger.exception(f"Error processing file: {str(e)}")
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if file_path and os.path.exists(file_path):
+                os.remove(file_path)
+            return Response({'error': f'Failed to process file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         finally:
             with lock:
                 is_processing = False
-                logger.debug("Queue unlocked")
+                logger.debug(f"Queue unlocked, is_processing: {is_processing}")
 
 class GenerateSoundView(APIView):
     def get(self, request):

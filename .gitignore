@@ -42,3 +42,4 @@ track_separation/staticfiles/
 *.bak
 track_separation/gunicorn.out
 .DS_Store
+backend/output/

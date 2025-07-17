@@ -1,3 +1,4 @@
+
 """
 Django settings for track_separation project.
 
@@ -16,6 +17,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 os.environ['PATH'] += os.pathsep + '/opt/local/bin'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
