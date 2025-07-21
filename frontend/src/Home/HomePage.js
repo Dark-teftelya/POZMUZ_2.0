@@ -269,7 +269,7 @@ const Homepage = () => {
           <div className="social-block">
             <p className="social-title">Переходите в наши соцсети:</p>
             <div className="social-links">
-              <a href="https://t.me/PozMUZZ" target="_blank" rel="noopener noreferrer" className="social-link">
+              <a href="https://t.me/pozmuzzz" target="_blank" rel="noopener noreferrer" className="social-link">
                 <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram" className="social-icon" />
               </a>
               <a href="https://vk.com/pozmuz" target="_blank" rel="noopener noreferrer" className="social-link">
