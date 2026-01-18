@@ -1,0 +1,28 @@
+name: Build and ZIP
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # Собираем проект (зависит от того, на чём он)
+    # Пример: если Python:
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Create ZIP
+      run: zip -r project.zip .
+
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v3
+      with:
+        name: project-zip
+        path: project.zip
